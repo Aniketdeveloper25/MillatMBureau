@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+{% block extra_css %}
+<style>
+  .btn-custom {
+    background-color: #33a3ac;
+    border-color: #33a3ac;
+    color: white;
+  }
+  
+  .btn-custom:hover {
+    background-color: #2a8a91;
+    border-color: #2a8a91;
+    color: white;
+  }
+  
+  .btn-outline-custom {
+    color: #33a3ac;
+    border-color: #33a3ac;
+  }
+  
+  .btn-outline-custom:hover {
+    background-color: #33a3ac;
+    color: white;
+  }
+  
+  .pulse-animation {
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(51, 163, 172, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(51, 163, 172, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(51, 163, 172, 0);
+    }
+  }
+  
+  .text-custom {
+    color: #33a3ac !important;
+  }
+  
+  /* Fancy welcome message styling */
+  .welcome-container {
+    background: linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.7));
+    padding: 40px 20px 30px;
+    border-radius: 15px;
+    margin-bottom: 40px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(3px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+  
+  .welcome-container::before,
+  .welcome-container::after {
+    content: '';
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border: 2px solid rgba(51, 163, 172, 0.2);
+    border-radius: 50%;
+  }
+  
+  .welcome-container::before {
+    top: -75px;
+    left: -75px;
+  }
+  
+  .welcome-container::after {
+    bottom: -75px;
+    right: -75px;
+  }
+  
+  .welcome-heading {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .welcome-heading::before,
+  .welcome-heading::after {
+    content: '❧';
+    font-size: 0.5em;
+    color: #f8a5c2;
+    position: relative;
+    top: -10px;
+    margin: 0 15px;
+    opacity: 0.7;
+  }
+  
+  .millat-text {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 1.3em;
+    letter-spacing: 2px;
+    color: #33a3ac;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    position: relative;
+    display: inline-block;
+  }
+  
+  .millat-text::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #33a3ac;
+    transform: scaleX(0.8);
+    opacity: 0.7;
+  }
+  
+  .bureau-text {
+    color: #f8a5c2;
+    font-weight: 500;
+    letter-spacing: 1px;
+  }
+  
+  .welcome-subtitle {
+    font-style: italic;
+    color: #666;
+    font-size: 1.1rem;
+    margin-top: 10px;
+  }
+  
+  /* Register Card with Roses Background */
+  .register-card {
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+                url("{{ url_for('static', filename='img/backgrounds/roses-3072698_1920.jpg') }}");
+    background-size: cover;
+    background-position: center;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2) !important;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .register-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 50%);
+    pointer-events: none;
+  }
+  
+  .register-card .btn-outline-light {
+    border-color: white;
+  }
+  
+  .register-card .btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .register-card .pulse-animation {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    animation: pulse-white 2s infinite;
+  }
+  
+  @keyframes pulse-white {
+    0% {
+      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+  }
+</style>
+<!-- Add Google Font for fancy text -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-10 text-center welcome-container">
+      <h1 class="display-4 fade-in welcome-heading">Welcome to <span class="millat-text">Millat</span> <span class="bureau-text">Marriage Bureau</span></h1>
+      <p class="lead fade-in welcome-subtitle">The trusted platform for Muslim matrimony services</p>
+      
+      <!-- Social Media Links -->
+      
+    </div>
+  </div>
+
+  {% if not current_user.is_authenticated %}
+  <div class="row justify-content-center mb-5">
+    <div class="col-md-8">
+      <div class="card shadow slide-in register-card">
+        <div class="card-body text-center p-5">
+          <h2 class="mb-4 text-white">Register For Free</h2>
+          <p class="mb-4 text-white">Millat Marriage Bureau aims to go beyond matchmaking by creating a platform that supports individuals and families through family and pre-marital counseling, emphasizing values, ethics, honesty, trust, and commitment. It guides couples toward a happy, peaceful, and financially stable future rooted in mutual respect and Islamic principles, fostering strong marriages, families, and communities for success in this life and the Hereafter.</p>
+          <div class="d-grid gap-2 d-md-block">
+            <a href="{{ url_for('user.register') }}" class="btn btn-light btn-lg px-4 me-md-2 pulse-animation">Register Now</a>
+            <a href="{{ url_for('user.login') }}" class="btn btn-outline-light btn-lg px-4">Login</a>
+          </div>
+          <p class="mt-3 small text-white">You're currently viewing our public page. Register or login to get call from your match!!!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="row justify-content-center mb-5">
+    <div class="col-md-8">
+      <div class="card shadow slide-in">
+        <div class="card-body text-center p-4">
+          <h2 class="mb-3">Welcome Back, {{ current_user.fullname }}!</h2>
+          <p class="mb-4">Congratulations! You're now a member of Millat Marriage Bureau. Wait For Response From Our Team regarding your Match.</p>
+          <div class="d-grid gap-2 d-md-block">
+            <a href="{{ url_for('user.dashboard') }}" class="btn btn-custom btn-lg px-4 me-md-2">Go to Profile</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="row mb-5">
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body text-center">
+          <h3 class="h4 mb-3">Privacy Focused</h3>
+          <p>Your personal information is secure and only shared with potential matches based on your preferences.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body text-center">
+          <h3 class="h4 mb-3">Compatibility Matching</h3>
+          <p>Our advanced algorithm helps you find compatible matches based on your preferences and values.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body text-center">
+          <h3 class="h4 mb-3">Islamic Values</h3>
+          <p>Our platform is designed with Islamic principles in mind, helping you find a spouse who shares your faith.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reviews Section -->
+  <div class="row justify-content-center mt-5">
+    <div class="col-md-10">
+      <h2 class="text-center mb-4 fade-in">What Our Users Say</h2>
+      
+      <!-- Review Cards -->
+      <div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
+        {% for review in reviews.values() %}
+        <div class="col fade-in">
+          <div class="card h-100 shadow-sm match-card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">{{ review.user_name }}</h5>
+                <div class="text-custom">
+                  {% for i in range(review.rating) %}
+                  <i class="fas fa-star"></i>
+                  {% endfor %}
+                </div>
+              </div>
+              <p class="card-text">{{ review.comment }}</p>
+              <small class="text-muted">{{ review.date }}</small>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Add Review Form (Only for logged-in users) -->
+      {% if current_user.is_authenticated %}
+      <div class="card shadow fade-in mb-5">
+        <div class="card-body">
+          <h3 class="card-title mb-4">Share Your Experience</h3>
+          <form action="{{ url_for('user.add_review') }}" method="POST">
+            <div class="mb-3">
+              <label for="rating" class="form-label">Rating</label>
+              <select class="form-select" id="rating" name="rating" required>
+                <option value="5">5 Stars - Excellent</option>
+                <option value="4">4 Stars - Very Good</option>
+                <option value="3">3 Stars - Good</option>
+                <option value="2">2 Stars - Fair</option>
+                <option value="1">1 Star - Poor</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="comment" class="form-label">Your Review</label>
+              <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-custom">Submit Review</button>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      <div class="card shadow fade-in mb-5">
+        <div class="card-body text-center p-4">
+          <h3 class="card-title mb-3">Want to Share Your Experience?</h3>
+          <p>Login or register to leave a review and access all features!</p>
+          <div class="mt-3">
+            <a href="{{ url_for('user.login') }}" class="btn btn-custom me-2">Login</a>
+            <a href="{{ url_for('user.register') }}" class="btn btn-outline-custom">Register</a>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% block title %}Register{% endblock %}
+{% block extra_css %}
+<style>
+  .btn-custom {
+    background-color: #33a3ac;
+    border-color: #33a3ac;
+    color: white;
+  }
+  
+  .btn-custom:hover {
+    background-color: #2a8a91;
+    border-color: #2a8a91;
+    color: white;
+  }
+  
+  a {
+    color: #33a3ac;
+  }
+  
+  a:hover {
+    color: #2a8a91;
+  }
+  
+  /* Password toggle button styling */
+  .password-toggle-btn {
+    cursor: pointer;
+    padding: 0.375rem 0.75rem;
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+  }
+  
+  .password-toggle-btn:hover {
+    background-color: #e9ecef;
+  }
+  
+  .password-toggle-btn:focus {
+    box-shadow: none;
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow">
+        <div class="card-body">
+          <h3 class="card-title mb-4 text-center">Create Account</h3>
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+          <form method="POST">
+            <h5 class="mb-3">Personal Information</h5>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="fullname" class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="fullname" name="fullname" required>
+              </div>
+              <div class="col-md-6">
+                <label for="email" class="form-label">Email address</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Password</label>
+              <div class="input-group">
+                <input type="password" class="form-control" id="password" name="password" required>
+                <button class="btn password-toggle-btn" type="button" id="togglePassword" tabindex="-1">
+                  <i class="fas fa-eye" id="toggleIcon"></i>
+                </button>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label for="gender" class="form-label">Gender</label>
+                <select class="form-select" id="gender" name="gender" required>
+                  <option value="" selected disabled>Select gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="age" class="form-label">Age</label>
+                <input type="number" class="form-control" id="age" name="age" min="18" max="80" required>
+              </div>
+              <div class="col-md-4">
+                <label for="location" class="form-label">Location</label>
+                <input type="text" class="form-control" id="location" name="location" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="phone" class="form-label">Phone Number</label>
+              <input type="tel" class="form-control" id="phone" name="phone" pattern="[0-9]{10}" placeholder="Enter 10 digit phone number" required>
+            </div>
+            
+            <hr class="my-4">
+            <h5 class="mb-3">Education Details</h5>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label for="education_level" class="form-label">Education Level</label>
+                <select class="form-select" id="education_level" name="education_level">
+                  <option value="" selected disabled>Select level</option>
+                  <option value="high_school">High School</option>
+                  <option value="bachelors">Bachelor's Degree</option>
+                  <option value="masters">Master's Degree</option>
+                  <option value="doctorate">Doctorate/PhD</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="education_field" class="form-label">Field of Study</label>
+                <input type="text" class="form-control" id="education_field" name="education_field" placeholder="e.g., Computer Science">
+              </div>
+              <div class="col-md-4">
+                <label for="education_institute" class="form-label">Institution</label>
+                <input type="text" class="form-control" id="education_institute" name="education_institute" placeholder="e.g., Harvard University">
+              </div>
+            </div>
+            
+            <hr class="my-4">
+            <h5 class="mb-3">Employment Details (Optional)</h5>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label for="job_title" class="form-label">Job Title</label>
+                <input type="text" class="form-control" id="job_title" name="job_title" placeholder="e.g., Software Engineer" aria-describedby="jobTitleHelp">
+                <small id="jobTitleHelp" class="form-text text-muted">Optional</small>
+              </div>
+              <div class="col-md-4">
+                <label for="job_company" class="form-label">Company/Organization</label>
+                <input type="text" class="form-control" id="job_company" name="job_company" placeholder="e.g., Google" aria-describedby="jobCompanyHelp">
+                <small id="jobCompanyHelp" class="form-text text-muted">Optional</small>
+              </div>
+              <div class="col-md-4">
+                <label for="job_experience" class="form-label">Years of Experience</label>
+                <input type="number" class="form-control" id="job_experience" name="job_experience" min="0" max="50" placeholder="e.g., 5" aria-describedby="jobExperienceHelp">
+                <small id="jobExperienceHelp" class="form-text text-muted">Optional</small>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <button type="submit" class="btn btn-custom w-100">Register</button>
+            </div>
+          </form>
+          <div class="mt-3 text-center">
+            Already have an account? <a href="{{ url_for('user.login') }}">Login</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (togglePassword && passwordInput && toggleIcon) {
+      togglePassword.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Toggle the type attribute
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        // Toggle the icon
+        toggleIcon.classList.toggle('fa-eye');
+        toggleIcon.classList.toggle('fa-eye-slash');
+      });
+    } else {
+      console.error('Password toggle elements not found');
+    }
+  });
+</script>
+{% endblock %}

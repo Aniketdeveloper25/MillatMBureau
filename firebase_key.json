@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "muslim-nikah-d4ea4",
+  "private_key_id": "ecec8ca1e460fd7d82126aaf4e08291773756fd9",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC/19e/z2gS1YYr\nDWVkDKcuUpounR8Yu/fsELB2T1UwTCffuw3bmLVLJDPGBlV4YzCAVuizT4NJ8Aex\nFHKXrftSYorOsCGrXPm9YnBg9QtH+IcKYtEnb+lShKlI2K5b9TbOY8myviH16jEE\nw4BmCdG6iTK+KM8geJ6gBled4pYCpdw4FmGM0/AnYgV3zTiOPvDjnp6hV5af0Y5o\nCGW/tEYyKapzRI9qUgp1afhZAk64W4TwLQC7Jhla29nRG9SVmOqaF7KxBJlDGl8i\n2urgN7MbkLvmp53qi0YW3sCim1A6mPp2PQnN/Ajst5rp9EI1atkkYsfSm5iUIrlk\nVYoye0R3AgMBAAECggEAGSbDC6E1a6lgi+Vs4mdBmzJLh4qkSI8K69aro/SLs9Il\niiYRJOC0/Wh+JzCuZPhazqtWRSf1YQIIqB/eVDeEUyKbQIoup95VLw39s3XSUvm+\nOU+HogGAmAfPf+mfQRbO5tPbXkVM2Nupgzk0bMGjJFnCHtSP2e8mcM7UDt2QPZa8\nOlMjTbYB1lbActUHcjcC98EFCkRMfQuTqnUF3FfVUEM0L+MVhq9nxWBsw1GgZbXh\nuwyb6a6WTuP9pqsxWVpWgg9QiFj01hOej/baWZ3nOceiVGjuAgPBZz/KKGgQ6RJo\nCbwYbvm7Fy6I7OWa/ou7bPT3KCdqXNJdXLXyxCrieQKBgQD9t/eBMu6aFTrILNqA\ntxwCSU+zsi4iyjZ7ck3IvAIyLx+oVukj+simxbdoWauXP/qFl96qBOMwzeXdZGPa\ntPOSSfUIHaXXuILGo3/g0bba/DwDoeNLPegxiBBAAST2hku80jrMk/x2D2GPW+XM\nCSO7e1m7cWyzzDAEAYMLqGflWQKBgQDBkXH4OeCVIXmXz6inyKSEo+6q4JUQGggz\nSnvkKG+9p4ZHKXavLjgUz8kQK+FFGocP0D+18RDg7cjL3VyZvS4G25HEffuhAnoZ\nkfCl+4bK/g89lASIYDN8tam4ByO7A6ZwARK3LHTuvSEgc++HNLuS5DDV6+eTK+1M\n4RjqGrGuTwKBgEjf9m9dubr4LhIhEAG4lorxk7sBis7jVhLPGhh2KAtSDb3EeOKk\nvc1pLO0EFI01CzgkDwi2rqrt+QBGPYgsQWnbZE4YdfIoRSfY/noMwoDTwkkozqhl\n97OCaWh4660Dle1+VPU97F3cvSD4PGEGnwTSwUtdoONj2sbLyGAo1u7BAoGAYv3q\n9zNCM4JHGOhOLGBkIqFjsWfhU7a8ct6otWoomylNdp8x3y0X6SzKesa2Eg0a/W9W\n5ck/BIkWo4u1i7pAC6nGxmJXiWQm5WTJWVlk+fMsACXum3/3VNPi1AZys3WObMFf\nvOWzd1Sp2FryKIdDVj/06bIXYCCa3zJO94pnS+kCgYAAyQw/vVB2La1T41CqN3ZE\nVo4guCoImixmiGgjhnz99onAzlg8Aeyv7x9ITfol2HJzVt062ZPbksH/QGwbz/Aj\n9XHTbYoklWDziPT4ltm8aGLRVtgAlAisp/LIVl/Kxt9CPw5fuI4YqONGeEohACwu\n17XrBvIBoZoQm8ySs3Iu/w==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@muslim-nikah-d4ea4.iam.gserviceaccount.com",
+  "client_id": "106879624076533624786",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40muslim-nikah-d4ea4.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

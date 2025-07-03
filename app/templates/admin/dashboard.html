@@ -1,0 +1,655 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block extra_css %}
+<style>
+  .custom-primary {
+    background-color: #33a3ac !important;
+    border-color: #33a3ac !important;
+  }
+  
+  .custom-primary-text {
+    color: #33a3ac !important;
+  }
+  
+  .list-group-item.active {
+    background-color: #33a3ac !important;
+    border-color: #33a3ac !important;
+  }
+  
+  .btn-custom {
+    background-color: #33a3ac;
+    border-color: #33a3ac;
+    color: white;
+  }
+  
+  .btn-custom:hover {
+    background-color: #2a8a91;
+    border-color: #2a8a91;
+    color: white;
+  }
+  
+  .btn-outline-custom {
+    color: #33a3ac;
+    border-color: #33a3ac;
+  }
+  
+  .btn-outline-custom:hover {
+    background-color: #33a3ac;
+    color: white;
+  }
+  
+  .badge-custom {
+    background-color: #33a3ac !important;
+    color: white !important;
+  }
+  
+  .badge-pending {
+    background-color: #dc3545 !important; /* Red */
+    color: white !important;
+  }
+  
+  .badge-complete {
+    background-color: #28a745 !important; /* Green */
+    color: white !important;
+  }
+  
+  .badge-incomplete {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+  }
+  
+  .badge-accepted {
+    background-color: #28a745 !important; /* Green */
+    color: white !important;
+  }
+  
+  .badge-rejected {
+    background-color: #dc3545 !important; /* Red */
+    color: white !important;
+  }
+  
+  .sidebar {
+    min-height: calc(100vh - 56px);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  @media (max-width: 768px) {
+    .sidebar {
+      min-height: auto;
+    }
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-2 bg-light p-3 sidebar">
+      <h4 class="text-center mb-4">Admin Panel</h4>
+      <div class="list-group">
+        <button class="list-group-item list-group-item-action active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard">Dashboard</button>
+        <button class="list-group-item list-group-item-action" id="users-tab" data-bs-toggle="tab" data-bs-target="#users">Users</button>
+        <button class="list-group-item list-group-item-action" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches">Matches</button>
+        <button class="list-group-item list-group-item-action" id="create-match-tab" data-bs-toggle="tab" data-bs-target="#create-match">Create Match</button>
+        <a href="{{ url_for('user.logout') }}" class="list-group-item list-group-item-action text-danger mt-5">Logout</a>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="col-md-10">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+      
+      <div class="tab-content">
+        <!-- Dashboard Overview -->
+        <div class="tab-pane fade show active" id="dashboard">
+          <h3 class="mb-4">Dashboard Overview</h3>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="card custom-primary text-white mb-4">
+                <div class="card-body">
+                  <h5 class="card-title">Total Users</h5>
+                  <h2 class="display-4">{{ users|length }}</h2>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                  <a class="small text-white stretched-link" href="javascript:void(0);" id="view-users-link">View Details</a>
+                  <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card custom-primary text-white mb-4">
+                <div class="card-body">
+                  <h5 class="card-title">Total Matches</h5>
+                  <h2 class="display-4">{{ matches|length }}</h2>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                  <a class="small text-white stretched-link" href="javascript:void(0);" id="view-matches-link">View Details</a>
+                  <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card bg-info text-white mb-4">
+                <div class="card-body">
+                  <h5 class="card-title">Actions</h5>
+                  <div class="mt-3">
+                    <a href="{{ url_for('admin.download_xls') }}" id="downloadXlsBtn" class="btn btn-custom">Download User Data</a>
+                    <button type="button" class="btn btn-custom" id="create-match-btn">Create New Match</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row mt-4">
+            <div class="col-md-6">
+              <div class="card mb-4">
+                <div class="card-header">
+                  <h5 class="mb-0">Recent Users</h5>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-sm">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Gender</th>
+                          <th>Age</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for uid, user in users.items() %}
+                          {% if not user.is_admin and loop.index <= 5 %}
+                          <tr>
+                            <td>{{ user.fullname }}</td>
+                            <td>{{ user.gender|capitalize if user.gender else 'N/A' }}</td>
+                            <td>{{ user.age if user.age else 'N/A' }}</td>
+                            <td><span class="badge badge-{{ 'complete' if user.profile_complete else 'incomplete' }}">{{ 'Complete' if user.profile_complete else 'Incomplete' }}</span></td>
+                          </tr>
+                          {% endif %}
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card mb-4">
+                <div class="card-header">
+                  <h5 class="mb-0">Recent Matches</h5>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-sm">
+                      <thead>
+                        <tr>
+                          <th>Male</th>
+                          <th>Female</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for match_id, match in matches.items() %}
+                          {% if loop.index <= 5 %}
+                          <tr>
+                            <td>{% if match is mapping and match.get('user1_id') %}{{ users[match.user1_id].fullname if match.user1_id in users else 'Unknown' }}{% else %}Invalid{% endif %}</td>
+                            <td>{% if match is mapping and match.get('user2_id') %}{{ users[match.user2_id].fullname if match.user2_id in users else 'Unknown' }}{% else %}Invalid{% endif %}</td>
+                            <td>{% if match is mapping %}<span class="badge badge-{{ 'accepted' if match.get('status') == 'accepted' else 'rejected' if match.get('status') == 'rejected' else 'pending' }}">{{ match.get('status', 'pending')|capitalize }}</span>{% else %}<span class="badge badge-warning">Invalid</span>{% endif %}</td>
+                          </tr>
+                          {% endif %}
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Users Tab -->
+        <div class="tab-pane fade" id="users">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3>User Management</h3>
+            <div>
+              <a href="{{ url_for('admin.download_xls') }}" id="downloadXlsBtn" class="btn btn-custom">Download XLS</a>
+            </div>
+          </div>
+          
+              <!-- Filter Controls -->
+              <div class="row mb-3">
+                <div class="col-md-4">
+                  <input type="text" id="userSearchInput" class="form-control" placeholder="Search by name...">
+                </div>
+                <div class="col-md-3">
+                  <select id="jobFilter" class="form-select">
+                    <option value="">Filter by Job</option>
+                    {% for job in job_titles %}
+                      <option value="{{ job }}">{{ job|title }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <select id="educationFilter" class="form-select">
+                    <option value="">Filter by Education</option>
+                    {% for level in education_levels %}
+                      <option value="{{ level }}">{{ level|replace('_', ' ')|title }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-md-2">
+              <button id="resetFilters" class="btn btn-outline-custom w-100">Reset</button>
+                </div>
+              </div>
+              
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="usersTable">
+                  <thead class="table-light">
+                    <tr>
+                      <th>#</th>
+                      <th>Full Name</th>
+                      <th>Email</th>
+                      <th>Gender</th>
+                      <th>Age</th>
+                      <th>Location</th>
+                      <th>Job Title</th>
+                      <th>Education</th>
+                      <th>Profile Status</th>
+                  <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for uid, user in users.items() %}
+                {% if not user.is_admin %}
+                    <tr data-job="{{ user.job.title|lower if user.job and user.job.title else '' }}" data-education="{{ user.education.level if user.education and user.education.level else '' }}">
+                      <td>{{ loop.index }}</td>
+                      <td>{{ user.fullname }}</td>
+                      <td>{{ user.email }}</td>
+                      <td>{{ user.gender|capitalize if user.gender else 'Not specified' }}</td>
+                      <td>{{ user.age if user.age else 'Not specified' }}</td>
+                      <td>{{ user.location if user.location else 'Not specified' }}</td>
+                      <td>{{ user.job.title if user.job and user.job.title else 'Not specified' }}</td>
+                      <td>{{ user.education.level|replace('_', ' ')|title if user.education and user.education.level else 'Not specified' }}</td>
+                  <td><span class="badge badge-{{ 'complete' if user.profile_complete else 'incomplete' }}">{{ 'Complete' if user.profile_complete else 'Incomplete' }}</span></td>
+                  <td>
+                    <a href="{{ url_for('admin.view_user', user_id=uid) }}" class="btn btn-sm btn-custom view-user-btn">View</a>
+                  </td>
+                    </tr>
+                {% endif %}
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+        <!-- Matches Tab -->
+        <div class="tab-pane fade" id="matches">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3>Match Management</h3>
+            <div>
+              <form action="{{ url_for('admin.create_all_matches') }}" method="POST" style="display:inline-block; margin-right: 10px;">
+                <button type="submit" class="btn btn-success" onclick="return confirm('This will create all possible male-female matches. Continue?')">Create All Possible Matches</button>
+              </form>
+              <button class="btn btn-custom" id="create-match-btn-2">Create New Match</button>
+            </div>
+          </div>
+          <div class="alert alert-info mb-3">
+            <i class="fas fa-info-circle me-2"></i> In all matches, the first person is always Male and the second person is always Female.
+          </div>
+          
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                  <thead class="table-light">
+                    <tr>
+                      <th>#</th>
+                      <th>Male</th>
+                      <th>Female</th>
+                      <th>Match Date</th>
+                  <th>Match Score</th>
+                      <th>Status</th>
+                  <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for match_id, match in matches.items() %}
+                    <tr>
+                      <td>{{ loop.index }}</td>
+                      <td>{% if match is mapping and match.get('user1_id') %}{{ users[match.user1_id].fullname if match.user1_id in users else 'Unknown' }}{% else %}Invalid Match Data{% endif %}</td>
+                      <td>{% if match is mapping and match.get('user2_id') %}{{ users[match.user2_id].fullname if match.user2_id in users else 'Unknown' }}{% else %}Invalid Match Data{% endif %}</td>
+                      <td>{% if match is mapping %}{{ match.get('match_date', 'N/A') }}{% else %}N/A{% endif %}</td>
+                  <td>{% if match is mapping %}{{ match.get('match_score', 'N/A') }}{% else %}N/A{% endif %}</td>
+                  <td>{% if match is mapping %}<span class="badge badge-{{ 'accepted' if match.get('status') == 'accepted' else 'rejected' if match.get('status') == 'rejected' else 'pending' }}">{{ match.get('status', 'pending')|capitalize }}</span>{% else %}<span class="badge badge-warning">Invalid</span>{% endif %}</td>
+                  <td>
+                    <div class="btn-group">
+                      <form action="{{ url_for('admin.update_match_status', match_id=match_id) }}" method="POST" style="display:inline;">
+                        <input type="hidden" name="status" value="accepted">
+                        <button type="submit" class="btn btn-sm btn-custom">Accept</button>
+                      </form>
+                      <form action="{{ url_for('admin.update_match_status', match_id=match_id) }}" method="POST" style="display:inline;">
+                        <input type="hidden" name="status" value="rejected">
+                        <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                      </form>
+                      <form action="{{ url_for('admin.delete_match', match_id=match_id) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this match?')">Delete</button>
+                      </form>
+                    </div>
+                  </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+          </div>
+        </div>
+        
+        <!-- Create Match Tab -->
+        <div class="tab-pane fade" id="create-match">
+          <h3 class="mb-4">Create New Match</h3>
+          <div class="alert alert-info mb-3">
+            <i class="fas fa-info-circle me-2"></i> Please select a Male for the first user and a Female for the second user. The system will automatically validate and organize the match accordingly.
+          </div>
+          <form action="{{ url_for('admin.create_match') }}" method="POST">
+            <div class="row">
+              <div class="col-md-5">
+                <div class="card">
+                  <div class="card-header">
+                    <h5 class="mb-0">Select Male</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <input type="text" class="form-control" id="user1Search" placeholder="Search users...">
+                    </div>
+                    <div class="form-group" style="max-height: 300px; overflow-y: auto;">
+                      <select class="form-select" id="user1Select" name="user1_id" size="10" required>
+                        {% for uid, user in users.items() %}
+                          {% if not user.is_admin and user.gender and user.gender.lower() == 'male' %}
+                            <option value="{{ uid }}" data-name="{{ user.fullname }}" data-gender="{{ user.gender }}" data-age="{{ user.age }}">{{ user.fullname }} ({{ user.gender|capitalize if user.gender else 'N/A' }}, {{ user.age if user.age else 'N/A' }})</option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-2 d-flex align-items-center justify-content-center">
+                <div class="text-center">
+                  <div class="mb-3">
+                    <label for="matchScore" class="form-label">Match Score</label>
+                    <input type="number" class="form-control" id="matchScore" name="match_score" min="0" max="100" value="50" required>
+                  </div>
+                  <div class="d-grid">
+                    <button type="submit" class="btn btn-custom">Create Match</button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-5">
+                <div class="card">
+                  <div class="card-header">
+                    <h5 class="mb-0">Select Female</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <input type="text" class="form-control" id="user2Search" placeholder="Search users...">
+                    </div>
+                    <div class="form-group" style="max-height: 300px; overflow-y: auto;">
+                      <select class="form-select" id="user2Select" name="user2_id" size="10" required>
+                        {% for uid, user in users.items() %}
+                          {% if not user.is_admin and user.gender and user.gender.lower() == 'female' %}
+                            <option value="{{ uid }}" data-name="{{ user.fullname }}" data-gender="{{ user.gender }}" data-age="{{ user.age }}">{{ user.fullname }} ({{ user.gender|capitalize if user.gender else 'N/A' }}, {{ user.age if user.age else 'N/A' }})</option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+              </div>
+            </div>
+          </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Make sure Bootstrap is loaded
+    if (typeof bootstrap === 'undefined') {
+      console.error('Bootstrap is not loaded!');
+      return;
+    }
+    
+    // Initialize Bootstrap tabs
+    const tabElements = document.querySelectorAll('[data-bs-toggle="tab"]');
+    tabElements.forEach(tabElement => {
+      try {
+        new bootstrap.Tab(tabElement);
+      } catch (e) {
+        console.error('Error initializing tab:', e);
+      }
+    });
+    
+    // Filter functionality for users table
+    const userSearchInput = document.getElementById('userSearchInput');
+    const jobFilter = document.getElementById('jobFilter');
+    const educationFilter = document.getElementById('educationFilter');
+    const resetFilters = document.getElementById('resetFilters');
+    const usersTable = document.getElementById('usersTable');
+    const rows = usersTable ? usersTable.querySelectorAll('tbody tr') : [];
+    const downloadXlsBtn = document.getElementById('downloadXlsBtn');
+    
+    function applyFilters() {
+      if (!rows.length) return;
+      
+      const searchText = userSearchInput.value.toLowerCase();
+      const jobValue = jobFilter.value.toLowerCase();
+      const educationValue = educationFilter.value.toLowerCase();
+      
+      rows.forEach(row => {
+        const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+        const jobData = row.getAttribute('data-job').toLowerCase();
+        const educationData = row.getAttribute('data-education').toLowerCase();
+        
+        const nameMatch = name.includes(searchText);
+        const jobMatch = !jobValue || jobData.includes(jobValue);
+        const educationMatch = !educationValue || educationData === educationValue;
+        
+        if (nameMatch && jobMatch && educationMatch) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+      
+      // Update download link with filters
+      if (downloadXlsBtn) {
+      let downloadUrl = "{{ url_for('admin.download_xls') }}";
+      let params = [];
+      
+      if (jobValue) {
+        params.push(`job=${encodeURIComponent(jobValue)}`);
+      }
+      if (educationValue) {
+        params.push(`education=${encodeURIComponent(educationValue)}`);
+      }
+      
+      if (params.length > 0) {
+        downloadUrl += '?' + params.join('&');
+      }
+      
+      downloadXlsBtn.href = downloadUrl;
+      }
+    }
+    
+    if (userSearchInput) userSearchInput.addEventListener('input', applyFilters);
+    if (jobFilter) jobFilter.addEventListener('change', applyFilters);
+    if (educationFilter) educationFilter.addEventListener('change', applyFilters);
+    
+    if (resetFilters) {
+    resetFilters.addEventListener('click', function() {
+      userSearchInput.value = '';
+      jobFilter.value = '';
+      educationFilter.value = '';
+        if (rows.length) rows.forEach(row => row.style.display = '');
+        if (downloadXlsBtn) downloadXlsBtn.href = "{{ url_for('admin.download_xls') }}";
+      });
+    }
+    
+    // User search in create match tab
+    const user1Search = document.getElementById('user1Search');
+    const user2Search = document.getElementById('user2Search');
+    const user1Select = document.getElementById('user1Select');
+    const user2Select = document.getElementById('user2Select');
+    
+    function filterUserSelect(searchInput, selectElement) {
+      if (!searchInput || !selectElement) return;
+      
+      searchInput.addEventListener('input', function() {
+        const searchText = this.value.toLowerCase();
+        const options = selectElement.querySelectorAll('option');
+        
+        options.forEach(option => {
+          const text = option.textContent.toLowerCase();
+          if (text.includes(searchText)) {
+            option.style.display = '';
+          } else {
+            option.style.display = 'none';
+          }
+        });
+      });
+    }
+    
+    filterUserSelect(user1Search, user1Select);
+    filterUserSelect(user2Search, user2Select);
+    
+    // Dashboard navigation links
+    const viewUsersLink = document.getElementById('view-users-link');
+    const viewMatchesLink = document.getElementById('view-matches-link');
+    const createMatchBtn = document.getElementById('create-match-btn');
+    const createMatchBtn2 = document.getElementById('create-match-btn-2');
+    const usersTab = document.getElementById('users-tab');
+    const matchesTab = document.getElementById('matches-tab');
+    const createMatchTab = document.getElementById('create-match-tab');
+    
+    // Handle download buttons to ensure redirect back to dashboard
+    const downloadButtons = document.querySelectorAll('a[href*="download_xls"]');
+    downloadButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        // Create an iframe to handle the download without navigating away
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+        
+        // Set up a timer to reload the page after download has likely started
+        setTimeout(() => {
+          window.location.href = "{{ url_for('admin.dashboard') }}";
+        }, 2000);
+        
+        // Start the download in the iframe
+        iframe.src = this.href;
+        e.preventDefault();
+      });
+    });
+    
+    if (viewUsersLink) {
+      viewUsersLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Remove active class from all tabs and add to users tab
+        document.querySelectorAll('.list-group-item').forEach(tab => {
+          tab.classList.remove('active');
+        });
+        usersTab.classList.add('active');
+        
+        // Hide all tab panes and show users tab
+        document.querySelectorAll('.tab-pane').forEach(pane => {
+          pane.classList.remove('show', 'active');
+        });
+        document.getElementById('users').classList.add('show', 'active');
+        
+        // Scroll to the users section
+        document.getElementById('users').scrollIntoView();
+      });
+    }
+    
+    if (viewMatchesLink) {
+      viewMatchesLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Remove active class from all tabs and add to matches tab
+        document.querySelectorAll('.list-group-item').forEach(tab => {
+          tab.classList.remove('active');
+        });
+        matchesTab.classList.add('active');
+        
+        // Hide all tab panes and show matches tab
+        document.querySelectorAll('.tab-pane').forEach(pane => {
+          pane.classList.remove('show', 'active');
+        });
+        document.getElementById('matches').classList.add('show', 'active');
+        
+        // Scroll to the matches section
+        document.getElementById('matches').scrollIntoView();
+      });
+    }
+    
+    if (createMatchBtn) {
+      createMatchBtn.addEventListener('click', function() {
+        // Remove active class from all tabs and add to create match tab
+        document.querySelectorAll('.list-group-item').forEach(tab => {
+          tab.classList.remove('active');
+        });
+        createMatchTab.classList.add('active');
+        
+        // Hide all tab panes and show create match tab
+        document.querySelectorAll('.tab-pane').forEach(pane => {
+          pane.classList.remove('show', 'active');
+        });
+        document.getElementById('create-match').classList.add('show', 'active');
+        
+        // Scroll to the create match section
+        document.getElementById('create-match').scrollIntoView();
+      });
+    }
+    
+    if (createMatchBtn2) {
+      createMatchBtn2.addEventListener('click', function() {
+        // Remove active class from all tabs and add to create match tab
+        document.querySelectorAll('.list-group-item').forEach(tab => {
+          tab.classList.remove('active');
+        });
+        createMatchTab.classList.add('active');
+        
+        // Hide all tab panes and show create match tab
+        document.querySelectorAll('.tab-pane').forEach(pane => {
+          pane.classList.remove('show', 'active');
+        });
+        document.getElementById('create-match').classList.add('show', 'active');
+        
+        // Scroll to the create match section
+        document.getElementById('create-match').scrollIntoView();
+      });
+    }
+  });
+</script>
+{% endblock %}
+
+{% block footer %}
+<footer class="footer mt-5 py-3" style="background-color: #f8f9fa;">
+  <div class="container">
+    <div class="text-center">
+      <p class="mb-0" style="color: #555;">&copy; {{ now.year }} Designed & Developed by Aniket Dhakate. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+{% endblock %}
