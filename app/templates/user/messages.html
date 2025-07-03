@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% block title %}Messages{% endblock %}
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <div class="card shadow fade-in">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">Messages</h4>
+          <a href="{{ url_for('user.dashboard') }}" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
+        </div>
+        <div class="card-body">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }} slide-in">{{ message }}</div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+          
+          <div class="row">
+            <!-- Contacts List -->
+            <div class="col-md-4 border-end">
+              <div class="list-group list-group-flush">
+                {% if conversations|length == 0 %}
+                  <div class="text-center py-5">
+                    <p class="text-muted">No conversations yet</p>
+                    <a href="{{ url_for('user.dashboard') }}" class="btn btn-sm btn-primary">Find Matches</a>
+                  </div>
+                {% else %}
+                  {% for contact in conversations %}
+                    <a href="{{ url_for('user.messages', contact_id=contact.id) }}" 
+                       class="list-group-item list-group-item-action {% if current_contact and current_contact.id == contact.id %}active{% endif %}"
+                       data-contact-id="{{ contact.id }}">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                          <h6 class="mb-1">{{ contact.fullname }}</h6>
+                          <span class="unread-indicator d-none" id="unread-{{ contact.id }}"></span>
+                        </div>
+                        <small>{{ contact.last_message_time|timeago }}</small>
+                      </div>
+                      <p class="mb-1 small text-truncate">{{ contact.last_message }}</p>
+                    </a>
+                  {% endfor %}
+                {% endif %}
+              </div>
+            </div>
+            
+            <!-- Message Area -->
+            <div class="col-md-8">
+              {% if current_contact %}
+                <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+                  <h5 class="mb-0">{{ current_contact.fullname }}</h5>
+                  <span class="badge bg-success">Online</span>
+                </div>
+                
+                <!-- Messages Container -->
+                <div class="message-container mb-3" style="height: 350px; overflow-y: auto;">
+                  {% for message in chat_messages %}
+                    <div class="message {% if message.sender_id == current_user.id %}message-sent{% else %}message-received{% endif %} mb-2">
+                      <div class="message-content p-2 rounded slide-in {% if message.sender_id == current_user.id %}bg-primary text-white{% else %}bg-light{% endif %}">
+                        {{ message.content }}
+                      </div>
+                      <div class="message-time small text-muted">
+                        {{ message.timestamp|datetime }}
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+                
+                <!-- Message Input -->
+                <form method="POST" action="{{ url_for('user.send_message', recipient_id=current_contact.id) }}">
+                  <div class="input-group">
+                    <input type="text" class="form-control" name="message" id="messageInput" placeholder="Type your message..." required autofocus>
+                    <button class="btn btn-primary" type="submit">Send</button>
+                  </div>
+                </form>
+              {% else %}
+                <div class="text-center py-5">
+                  <p class="text-muted">Select a conversation or start a new one</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .message-sent {
+    text-align: right;
+  }
+  .message-received {
+    text-align: left;
+  }
+  .message-content {
+    display: inline-block;
+    max-width: 80%;
+  }
+  
+  .unread-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    display: inline-block;
+    margin-left: 6px;
+    animation: pulse 2s infinite;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Clear unread status for current contact
+    const hasCurrentContact = {% if current_contact %}true{% else %}false{% endif %};
+    if (hasCurrentContact) {
+      const contactId = "{{ current_contact.id if current_contact else '' }}";
+      if (contactId) {
+        // Use the global notification handler if available
+        if (window.messageNotifications) {
+          window.messageNotifications.clearUnread(contactId);
+        } else {
+          // Fallback to direct localStorage manipulation
+          let unreadMessages = JSON.parse(localStorage.getItem('unreadMessages') || '{}');
+          if (unreadMessages[contactId]) {
+            delete unreadMessages[contactId];
+            localStorage.setItem('unreadMessages', JSON.stringify(unreadMessages));
+            
+            const badge = document.getElementById('unreadBadge');
+            if (badge) {
+              const hasUnread = Object.keys(unreadMessages).length > 0;
+              badge.classList.toggle('d-none', !hasUnread);
+            }
+          }
+        }
+      }
+    }
+    
+    // Show unread indicators for conversations
+    const unreadMessages = JSON.parse(localStorage.getItem('unreadMessages') || '{}');
+    Object.keys(unreadMessages).forEach(contactId => {
+      const indicator = document.getElementById(`unread-${contactId}`);
+      if (indicator) {
+        indicator.classList.remove('d-none');
+      }
+    });
+  
+    // Scroll to the bottom of the message container when page loads
+    const messageContainer = document.querySelector('.message-container');
+    if (messageContainer) {
+      messageContainer.scrollTop = messageContainer.scrollHeight;
+    }
+    
+    // Focus on the message input field
+    const messageInput = document.querySelector('input[name="message"]');
+    if (messageInput) {
+      messageInput.focus();
+      
+      // Add event listener for Enter key
+      messageInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const form = messageInput.closest('form');
+          if (form && messageInput.value.trim() !== '') {
+            form.submit();
+          }
+        }
+      });
+    }
+    
+    // If URL has a query parameter 'new=true', show a welcome message
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('new') === 'true' && messageInput) {
+      messageInput.value = 'Hello! I saw your profile and would like to connect.';
+      messageInput.select();
+    }
+    
+    // Add click handlers for contact links to clear unread status
+    document.querySelectorAll('.list-group-item').forEach(item => {
+      item.addEventListener('click', function(e) {
+        const contactId = this.dataset.contactId;
+        if (contactId) {
+          // Use the global notification handler if available
+          if (window.messageNotifications) {
+            window.messageNotifications.clearUnread(contactId);
+          } else {
+            // Fallback to direct localStorage manipulation
+            let unreadMessages = JSON.parse(localStorage.getItem('unreadMessages') || '{}');
+            if (unreadMessages[contactId]) {
+              delete unreadMessages[contactId];
+              localStorage.setItem('unreadMessages', JSON.stringify(unreadMessages));
+            }
+          }
+          
+          // Hide the unread indicator for this contact
+          const indicator = document.getElementById(`unread-${contactId}`);
+          if (indicator) {
+            indicator.classList.add('d-none');
+          }
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

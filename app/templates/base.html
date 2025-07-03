@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="{{ current_language }}" {% if g.rtl %}dir="rtl"{% endif %}>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Millat Marriage Bureau - {% block title %}Home{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpg" href="{{ url_for('static', filename='img/favicon.ico.jpg') }}">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/animations.css') }}" rel="stylesheet">
+    
+    <!-- Background Image Style -->
+    <style>
+        body {
+            background-image: url("{{ url_for('static', filename='img/backgrounds/flower-4985011_1920.png') }}");
+            background-attachment: fixed;
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            position: relative;
+        }
+        
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 245, 245, 0.6);
+            z-index: -1;
+        }
+        
+        /* Enhance content readability with background */
+        .card {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(3px);
+        }
+        
+        .navbar {
+            background-color: rgba(255, 255, 255, 1) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .footer {
+            background-color: rgba(255, 245, 245, 0.95) !important;
+            border-top: 1px solid rgba(255, 200, 200, 0.2);
+        }
+        
+        main {
+            min-height: calc(100vh - 200px);
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+    
+    {% if g.rtl %}
+    <style>
+        body {
+            text-align: right;
+        }
+        .dropdown-menu {
+            text-align: right;
+        }
+        .ms-auto {
+            margin-right: auto !important;
+            margin-left: 0 !important;
+        }
+        .me-md-2 {
+            margin-left: 0.5rem !important;
+            margin-right: 0 !important;
+        }
+        .me-3 {
+            margin-left: 1rem !important;
+            margin-right: 0 !important;
+        }
+    </style>
+    {% endif %}
+    <style>
+        :root {
+            --primary-color: #33a3ac;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* This overlay is now defined in the background image style section */
+        
+        /* RTL specific styles */
+        html[dir="rtl"] .me-2 {
+            margin-right: 0 !important;
+            margin-left: 0.5rem !important;
+        }
+        
+        html[dir="rtl"] .me-3 {
+            margin-right: 0 !important;
+            margin-left: 1rem !important;
+        }
+        
+        html[dir="rtl"] .me-4 {
+            margin-right: 0 !important;
+            margin-left: 1.5rem !important;
+        }
+        
+        html[dir="rtl"] .ms-2 {
+            margin-left: 0 !important;
+            margin-right: 0.5rem !important;
+        }
+        
+        html[dir="rtl"] .ms-3 {
+            margin-left: 0 !important;
+            margin-right: 1rem !important;
+        }
+        
+        html[dir="rtl"] .ms-4 {
+            margin-left: 0 !important;
+            margin-right: 1.5rem !important;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: #33a3ac !important;
+            font-size: 1.5rem;
+            letter-spacing: 0.5px;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .card {
+            border: none;
+            background-color: white;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            border-radius: 12px;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary:hover {
+            background-color: #2a8a91;
+            border-color: #2a8a91;
+            transform: translateY(-2px);
+        }
+        .footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            background-color: #f1f1f1;
+        }
+        
+        /* Unread message indicator styles */
+        #unreadBadge {
+            width: 8px;
+            height: 8px;
+            margin-left: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        #unreadBadge:not(.d-none) {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+        /* Scroll to top button */
+        .scroll-to-top-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background-color: #33a3ac;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            font-size: 20px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .scroll-to-top-btn:hover {
+            background-color: #2a8a91;
+            transform: translateY(-3px);
+        }
+
+        /* Modern form inputs */
+        .form-control {
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(51, 163, 172, 0.2);
+            border-color: #33a3ac;
+        }
+
+        /* Navigation link hover effect */
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            background-color: #33a3ac;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        /* Social Media Icons Styling */
+        .social-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #f8f9fa;
+            color: #212529;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            border: 2px solid transparent;
+        }
+        
+        .social-icon:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            border-color: currentColor;
+        }
+        
+        .social-links {
+            margin-bottom: 1rem;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="{{ url_for('static', filename='img/logo.jpg') }}" alt="Millat Marriage Bureau" height="50">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <!-- Main Navigation -->
+                    {% if not current_user.is_authenticated or not current_user.is_admin %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('about') }}">About Us</a>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Authentication Links -->
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_admin %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('user.dashboard') }}">Profile</a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('user.logout') }}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('user.login') }}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('user.register') }}">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block footer %}
+    <!-- Footer -->
+    <footer class="footer mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 mb-4 mb-md-0">
+                    <h5 class="mb-3" style="color: #33a3ac;">About Millat Marriage Bureau</h5>
+                    <p class="text-muted">Millat Marriage Bureau is a trusted platform designed to help Muslims find their perfect life partner in accordance with Islamic principles. We prioritize privacy, security, and authenticity in our matching process.</p>
+                </div>
+                <div class="col-md-6 mb-4 mb-md-0">
+                    <h5 class="mb-3" style="color: #33a3ac;">Contact Us</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-envelope me-2" style="color: #33a3ac;"></i> millatmb54@gmail.com</li>
+                        <li class="mb-2"><i class="fas fa-phone me-2" style="color: #33a3ac;"></i>73045 49091 / 9833741230 / 022 4601 2005</li>
+                        <li class="mb-2"><i class="fas fa-map-marker-alt me-2" style="color: #33a3ac;"></i> Unit No 201, 2nd Floor, Ruby Monarch Building, Saki Vihar Road, Sakinaka, Mumbai - 400 072</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Social Media Links -->
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <h5 class="mb-3" style="color: #33a3ac;">Connect With Us</h5>
+                    <div class="social-links mb-4 d-flex justify-content-center">
+                        <a href="https://facebook.com/millat-marriage-bureau" target="_blank" class="social-icon mx-2" title="Facebook">
+                          <i class="fab fa-facebook-f fa-2x" style="color: #33a3ac;"></i>
+                        </a>
+                        <a href="https://instagram.com/millat-marriage-bureau" target="_blank" class="social-icon mx-2" title="Instagram">
+                          <i class="fab fa-instagram fa-2x" style="color: #33a3ac;"></i>
+                        </a>
+                        <a href="https://twitter.com/millat-marriage-bureau" target="_blank" class="social-icon mx-2" title="Twitter">
+                          <i class="fab fa-twitter fa-2x" style="color: #33a3ac;"></i>
+                        </a>
+                        <a href="https://youtube.com/millat-marriage-bureau" target="_blank" class="social-icon mx-2" title="YouTube">
+                          <i class="fab fa-youtube fa-2x" style="color: #33a3ac;"></i>
+                        </a>
+                        <a href="https://wa.me/9833741230" target="_blank" class="social-icon mx-2" title="WhatsApp">
+                          <i class="fab fa-whatsapp fa-2x" style="color: #33a3ac;"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            <div class="text-center">
+                <p class="mb-0" style="color: #555;">&copy; {{ now.year }} Designed & Developed by Aniket Dhakate. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    {% endblock %}
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/animations.js') }}"></script>
+    
+    <script>
+        // Initialize all dropdowns
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Bootstrap dropdowns
+            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'))
+            var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
+                return new bootstrap.Dropdown(dropdownToggleEl);
+            });
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+    
+    <!-- Socket.IO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    
+    {% if current_user.is_authenticated %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Connect to Socket.IO server with the correct path
+            const socket = io({
+                path: '/socket.io'
+            });
+            
+            // Handle connection
+            socket.on('connect', function() {
+                console.log('Socket.IO connected');
+            });
+            
+            // Handle disconnection
+            socket.on('disconnect', function() {
+                console.log('Socket.IO disconnected');
+            });
+            
+            // Handle connection error
+            socket.on('connect_error', function(error) {
+                console.log('Socket.IO connection error:', error);
+            });
+        });
+    </script>
+    {% endif %}
+    
+    <!-- No client-side language switching needed anymore -->
+</body>
+</html>

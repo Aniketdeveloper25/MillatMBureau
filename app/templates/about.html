@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %}About Us{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow mb-5">
+                <div class="card-body p-4">
+                    <h1 class="text-center mb-4">About Millat Marriage Bureau</h1>
+                    <div class="text-center mb-4">
+                        <img src="{{ url_for('static', filename='img/logo.jpg') }}" alt="Millat Marriage Bureau" class="img-fluid" style="max-width: 300px;">
+                    </div>
+                    
+                    <h2 class="h3 mt-5 mb-3">Our Story</h2>
+                    <p>Millat Marriage Bureau is not just about finding good marriage proposals. Our aim goes far beyond just matchmaking. We dream of creating <strong>a positive and meaningful platform</strong> where we support individuals and families in more ways than one. Along with helping people find suitable life partners, <strong>we also offer family and pre-marital counselling</strong>, so that couples can better understand their responsibilities and how to build a strong and loving relationship.</p>
+                    <h2 class="h3 mt-5 mb-3">Our Mission</h2>
+                    <p>Our goal is to guide the bride and groom about the<strong> importance of values, ethics, honesty, trust, and commitment</strong> in married life. We also help them plan for a <strong>happy, peaceful, and financially stable </strong>future, based on mutual respect and understanding.
+                        At the same time, we try to introduce couples to the <strong>beautiful teachings and principles of Islam</strong>, so that they not only lead a successful and happy life in this world but also earn rewards in the Hereafter.</p>
+                    <p>We believe that a strong marriage is the foundation of a strong family, and a strong family builds a strong community. That is the true vision of Millat Marriage Bureau — to support not just marriages, but <strong>happy, healthy, and faith-based lives</strong>.</p>
+                    
+                    <div class="row mt-5">
+                        <div class="col-md-6">
+                            <h2 class="h3 mb-3">Our Values</h2>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Respect for Islamic traditions and values
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Commitment to privacy and security
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Dedication to authenticity in profiles
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Focus on compatibility beyond superficial traits
+                                </li>
+                                <li class="list-group-item">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    Guidance according to Islamic principles
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h2 class="h3 mb-3">How We Work</h2>
+                            <p>Our platform uses a careful matching system that considers religious values, personal preferences, education, and family background to suggest compatible matches. We verify profiles to ensure authenticity and provide a secure environment for communication.</p>
+                            
+                            <h4 class="h5 mt-4">Our Process</h4>
+                            <ol>
+                                <li>Profile Creation - Create a detailed profile highlighting your background, preferences, and what you seek in a spouse</li>
+                                <li>Profile Verification - Our team verifies your information to ensure authenticity</li>
+                                <li>Personalized Matching - Our system suggests compatible matches based on your criteria</li>
+                                <li>Family Involvement - We encourage family participation in the process as per Islamic tradition</li>
+                                <li>Guided Communication - We provide a respectful environment for initial communication</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <h2 class="h3 mt-5 mb-3">Our Team</h2>
+                    <p>Our team consists of dedicated professionals who understand the cultural and religious nuances of Muslim matrimony. We are committed to providing exceptional service and support throughout your journey to finding a spouse.</p>
+                    
+                    <div class="row mt-5">
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h3 class="h4 mb-3">Privacy Focused</h3>
+                                    <p>Your personal information is secure and only shared with potential matches based on your preferences.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h3 class="h4 mb-3">Islamic Values</h3>
+                                    <p>Our platform is designed with Islamic principles in mind, helping you find a spouse who shares your faith.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    
+                    <div class="row">
+                        
+                        <div class="col-md-6">
+                            <h4 class="h3 mt-5 mb-3">Connect With Us</h4>
+                            <div class="social-links">
+                                <a href="https://facebook.com/millat-marriage-bureau" target="_blank" class="social-icon me-3" title="Facebook">
+                                    <i class="fab fa-facebook-f fa-2x text-primary"></i>
+                                </a>
+                                <a href="https://instagram.com/millat-marriage-bureau" target="_blank" class="social-icon me-3" title="Instagram">
+                                    <i class="fab fa-instagram fa-2x text-danger"></i>
+                                </a>
+                                <a href="https://twitter.com/millat-marriage-bureau" target="_blank" class="social-icon me-3" title="Twitter">
+                                    <i class="fab fa-twitter fa-2x text-info"></i>
+                                </a>
+                                <a href="https://youtube.com/millat-marriage-bureau" target="_blank" class="social-icon me-3" title="YouTube">
+                                    <i class="fab fa-youtube fa-2x text-danger"></i>
+                                </a>
+                                <a href="https://wa.me/9833741230" target="_blank" class="social-icon me-3" title="WhatsApp">
+                                    <i class="fab fa-whatsapp fa-2x text-success"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

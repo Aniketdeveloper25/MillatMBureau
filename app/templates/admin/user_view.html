@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+{% block title %}User Details - {{ user.fullname }}{% endblock %}
+{% block extra_css %}
+<style>
+  .custom-primary {
+    background-color: #33a3ac !important;
+    border-color: #33a3ac !important;
+  }
+  
+  .custom-primary-text {
+    color: #33a3ac !important;
+  }
+
+  .badge-custom {
+    background-color: #33a3ac !important;
+    color: white !important;
+  }
+  
+  .badge-pending {
+    background-color: #dc3545 !important; /* Red */
+    color: white !important;
+  }
+  
+  .badge-complete {
+    background-color: #28a745 !important; /* Green */
+    color: white !important;
+  }
+  
+  .badge-incomplete {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+  }
+  
+  .badge-accepted {
+    background-color: #28a745 !important; /* Green */
+    color: white !important;
+  }
+  
+  .badge-rejected {
+    background-color: #dc3545 !important; /* Red */
+    color: white !important;
+  }
+
+  .btn-custom {
+    background-color: #33a3ac;
+    border-color: #33a3ac;
+    color: white;
+  }
+  
+  .btn-custom:hover {
+    background-color: #2a8a91;
+    border-color: #2a8a91;
+    color: white;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>User Details</h2>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+    </a>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="row">
+    <!-- Basic Info Card -->
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-header custom-primary text-white">
+          <h5 class="mb-0">Basic Information</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-center mb-4">
+            <div class="text-center">
+              {% if user.profile_picture %}
+              <img src="{{ user.profile_picture }}" class="rounded-circle" width="150" height="150" alt="Profile Picture" style="object-fit: cover;">
+              {% else %}
+              <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 150px; height: 150px;">
+                <span class="text-white display-4">{{ user.fullname[0] }}</span>
+              </div>
+              {% endif %}
+              <h3 class="mt-3">{{ user.fullname }}</h3>
+              <p class="text-muted mb-0">{{ user.gender|capitalize if user.gender else 'Gender not specified' }}, {{ user.age if user.age else 'Age not specified' }}</p>
+              <span class="badge badge-{{ 'complete' if user.profile_complete else 'incomplete' }} mt-2">{{ 'Complete Profile' if user.profile_complete else 'Incomplete Profile' }}</span>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Phone:</strong> {{ user.phone if user.phone else 'Not provided' }}</p>
+            <p><strong>Location:</strong> {{ user.location if user.location else 'Not provided' }}</p>
+            <p><strong>Member Since:</strong> {{ user.created_at if user.created_at else 'Unknown' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Work & Education Card -->
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-header custom-primary text-white">
+          <h5 class="mb-0">Work & Education</h5>
+        </div>
+        <div class="card-body">
+          <h5 class="custom-primary-text">Work Experience</h5>
+          <div class="mb-4">
+            {% if user.job and user.job.title %}
+              <p><strong>Job Title:</strong> {{ user.job.title }}</p>
+              <p><strong>Company:</strong> {{ user.job.company if user.job.company else 'Not provided' }}</p>
+              <p><strong>Experience:</strong> {{ user.job.experience if user.job.experience else 'Not provided' }} years</p>
+              <p><strong>Description:</strong> {{ user.job.description if user.job.description else 'Not provided' }}</p>
+            {% else %}
+              <p class="text-muted">No work information provided</p>
+            {% endif %}
+          </div>
+          
+          <h5 class="custom-primary-text">Education</h5>
+          <div>
+            {% if user.education and user.education.level %}
+              <p><strong>Level:</strong> {{ user.education.level|replace('_', ' ')|title }}</p>
+              <p><strong>Field:</strong> {{ user.education.field if user.education.field else 'Not provided' }}</p>
+              <p><strong>Institution:</strong> {{ user.education.institute if user.education.institute else 'Not provided' }}</p>
+            {% else %}
+              <p class="text-muted">No education information provided</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Preferences Card -->
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+        <div class="card-header custom-primary text-white">
+          <h5 class="mb-0">Partner Preferences</h5>
+        </div>
+        <div class="card-body">
+          {% if user.preferences %}
+            <div class="mb-3">
+              <p><strong>Age Range:</strong> 
+                {% if user.preferences.age_min and user.preferences.age_max %}
+                  {{ user.preferences.age_min }} - {{ user.preferences.age_max }} years
+                {% else %}
+                  Not specified
+                {% endif %}
+              </p>
+              <p><strong>Preferred Location:</strong> {{ user.preferences.location if user.preferences.location else 'Not specified' }}</p>
+              <p><strong>Education Level:</strong> {{ user.preferences.education_level|replace('_', ' ')|title if user.preferences.education_level else 'Not specified' }}</p>
+              <p><strong>Education Field:</strong> {{ user.preferences.education_field if user.preferences.education_field else 'Not specified' }}</p>
+              <p><strong>Job Title:</strong> {{ user.preferences.job_title if user.preferences.job_title else 'Not specified' }}</p>
+              <p><strong>Min. Experience:</strong> {{ user.preferences.min_experience if user.preferences.min_experience else 'Not specified' }} years</p>
+            </div>
+            
+            {% if user.preferences.qualities %}
+              <h6 class="custom-primary-text">Desired Qualities:</h6>
+              <p>{{ user.preferences.qualities }}</p>
+            {% endif %}
+          {% else %}
+            <p class="text-muted">No preference information provided</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Matches Section -->
+  <div class="card mb-4">
+    <div class="card-header custom-primary text-white">
+      <h5 class="mb-0">User Matches ({{ user_matches|length }})</h5>
+    </div>
+    <div class="card-body">
+      {% if user_matches %}
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Matched With</th>
+                <th>Match Date</th>
+                <th>Match Score</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for match in user_matches %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ match.other_user.fullname }}</td>
+                <td>{{ match.match_date }}</td>
+                <td>{{ match.match_score }}</td>
+                <td><span class="badge badge-{{ 'accepted' if match.status == 'accepted' else 'rejected' if match.status == 'rejected' else 'pending' }}">{{ match.status|capitalize }}</span></td>
+                <td>
+                  <div class="btn-group">
+                    <a href="{{ url_for('admin.view_user', user_id=match.other_user_id) }}" class="btn btn-sm btn-custom">View Profile</a>
+                    <form action="{{ url_for('admin.update_match_status', match_id=match.match_id) }}" method="POST" style="display:inline;">
+                      <input type="hidden" name="status" value="accepted">
+                      <button type="submit" class="btn btn-sm btn-success">Accept</button>
+                    </form>
+                    <form action="{{ url_for('admin.update_match_status', match_id=match.match_id) }}" method="POST" style="display:inline;">
+                      <input type="hidden" name="status" value="rejected">
+                      <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-muted">No matches found for this user.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<footer class="footer mt-5 py-3" style="background-color: #f8f9fa;">
+  <div class="container">
+    <div class="text-center">
+      <p class="mb-0" style="color: #555;">&copy; {{ now.year }} Designed & Developed by Aniket Dhakate. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+{% endblock %}

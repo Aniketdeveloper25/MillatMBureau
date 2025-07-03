@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+{% block title %}My Profile{% endblock %}
+{% block extra_css %}
+<style>
+  .btn-custom {
+    background-color: #33a3ac;
+    border-color: #33a3ac;
+    color: white;
+  }
+  
+  .btn-custom:hover {
+    background-color: #2a8a91;
+    border-color: #2a8a91;
+    color: white;
+  }
+  
+  .btn-outline-custom {
+    color: #33a3ac;
+    border-color: #33a3ac;
+  }
+  
+  .btn-outline-custom:hover {
+    background-color: #33a3ac;
+    color: white;
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow fade-in">
+        <div class="card-body">
+          <h3 class="card-title mb-4">My Profile</h3>
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }} slide-in">{{ message }}</div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+          <form method="POST" enctype="multipart/form-data">
+            <h5 class="mb-3">Personal Information</h5>
+            <!-- Profile Picture -->
+            <div class="row mb-4">
+              <div class="col-md-12 text-center">
+                <div class="mb-3">
+                  {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture }}" alt="Profile Picture" class="rounded-circle" width="150" height="150" id="profile-image-preview">
+                  {% else %}
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mb-3 mx-auto" style="width: 150px; height: 150px;" id="profile-image-placeholder">
+                      <span class="text-white display-4">{{ user.fullname[0] }}</span>
+                    </div>
+                    <img src="" alt="Profile Picture" class="rounded-circle mb-3 d-none" width="150" height="150" id="profile-image-preview">
+                  {% endif %}
+                </div>
+                <div class="mb-3">
+                  <label for="profile_picture" class="form-label">Upload Profile Picture</label>
+                  <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/*">
+                  <small class="text-muted">Upload a square image for best results (max 5MB)</small>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="fullname" class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="fullname" name="fullname" value="{{ user.fullname }}" required>
+              </div>
+              <div class="col-md-6">
+                <label for="email" class="form-label">Email address</label>
+                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" readonly>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label for="gender" class="form-label">Gender</label>
+                <select class="form-select" id="gender" name="gender" required>
+                  <option value="male" {% if user.gender == 'male' %}selected{% endif %}>Male</option>
+                  <option value="female" {% if user.gender == 'female' %}selected{% endif %}>Female</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="age" class="form-label">Age</label>
+                <input type="number" class="form-control" id="age" name="age" min="18" max="80" value="{{ user.age }}" required>
+              </div>
+              <div class="col-md-4">
+                <label for="location" class="form-label">Location</label>
+                <input type="text" class="form-control" id="location" name="location" value="{{ user.location }}" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="phone" class="form-label">Phone Number</label>
+              <input type="tel" class="form-control" id="phone" name="phone" pattern="[0-9]{10}" value="{{ user.phone }}" required>
+              <small class="text-muted">Enter 10-digit phone number</small>
+            </div>
+            <div class="mb-3">
+              <label for="about" class="form-label">About Me</label>
+              <textarea class="form-control" id="about" name="about" rows="4">{{ user.about }}</textarea>
+            </div>
+            
+            <hr class="my-4">
+            <h5 class="mb-3">Education Details</h5>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label for="education_level" class="form-label">Education Level</label>
+                <select class="form-select" id="education_level" name="education_level">
+                  <option value="" disabled>Select level</option>
+                  <option value="high_school" {% if user.education.level == 'high_school' %}selected{% endif %}>High School</option>
+                  <option value="bachelors" {% if user.education.level == 'bachelors' %}selected{% endif %}>Bachelor's Degree</option>
+                  <option value="masters" {% if user.education.level == 'masters' %}selected{% endif %}>Master's Degree</option>
+                  <option value="doctorate" {% if user.education.level == 'doctorate' %}selected{% endif %}>Doctorate/PhD</option>
+                  <option value="other" {% if user.education.level == 'other' %}selected{% endif %}>Other</option>
+                  <option value="None" {% if user.education.level == 'None' %}selected{% endif %}>None</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="education_field" class="form-label">Field of Study</label>
+                <input type="text" class="form-control" id="education_field" name="education_field" placeholder="e.g., Computer Science" value="{{ user.education.field }}">
+                <small id="jobTitleHelp" class="form-text text-muted">Optional & Place N/A if not applicable</small>
+              </div>
+              <div class="col-md-4">
+                <label for="education_institute" class="form-label">Institution</label>
+                <input type="text" class="form-control" id="education_institute" name="education_institute" placeholder="e.g., Harvard University" value="{{ user.education.institute }}">
+                <small id="jobTitleHelp" class="form-text text-muted">Optional & Place N/A if not applicable</small>
+              </div>
+            </div>
+            
+            <hr class="my-4">
+            <h5 class="mb-3">Employment Details (Optional)</h5>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label for="job_title" class="form-label">Job Title</label>
+                <input type="text" class="form-control" id="job_title" name="job_title" placeholder="e.g., Software Engineer" value="{{ user.job.title }}" aria-describedby="jobTitleHelp">
+                <small id="jobTitleHelp" class="form-text text-muted">Optional</small>
+              </div>
+              <div class="col-md-4">
+                <label for="job_company" class="form-label">Company/Organization</label>
+                <input type="text" class="form-control" id="job_company" name="job_company" placeholder="e.g., Google" value="{{ user.job.company }}" aria-describedby="jobCompanyHelp">
+                <small id="jobCompanyHelp" class="form-text text-muted">Optional</small>
+              </div>
+              <div class="col-md-4">
+                <label for="job_experience" class="form-label">Years of Experience</label>
+                <input type="number" class="form-control" id="job_experience" name="job_experience" min="0" max="50" placeholder="e.g., 5" value="{{ user.job.experience }}" aria-describedby="jobExperienceHelp">
+                <small id="jobExperienceHelp" class="form-text text-muted">Optional</small>
+              </div>
+            </div>
+            
+            <hr class="my-4">
+            <h5 class="mb-3">Partner Preferences</h5>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="pref_age_min" class="form-label">Age Range (Min)</label>
+                <input type="number" class="form-control" id="pref_age_min" name="pref_age_min" min="18" max="80" value="{{ user.preferences.age_min }}">
+              </div>
+              <div class="col-md-6">
+                <label for="pref_age_max" class="form-label">Age Range (Max)</label>
+                <input type="number" class="form-control" id="pref_age_max" name="pref_age_max" min="18" max="80" value="{{ user.preferences.age_max }}">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="pref_location" class="form-label">Preferred Location</label>
+              <input type="text" class="form-control" id="pref_location" name="pref_location" value="{{ user.preferences.location }}">
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="pref_education_level" class="form-label">Preferred Education Level</label>
+                <select class="form-select" id="pref_education_level" name="pref_education_level">
+                  <option value="">Any</option>
+                  <option value="high_school" {% if user.preferences.education_level == 'high_school' %}selected{% endif %}>High School</option>
+                  <option value="bachelors" {% if user.preferences.education_level == 'bachelors' %}selected{% endif %}>Bachelor's Degree</option>
+                  <option value="masters" {% if user.preferences.education_level == 'masters' %}selected{% endif %}>Master's Degree</option>
+                  <option value="doctorate" {% if user.preferences.education_level == 'doctorate' %}selected{% endif %}>Doctorate/PhD</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="pref_education_field" class="form-label">Preferred Field of Study</label>
+                <input type="text" class="form-control" id="pref_education_field" name="pref_education_field" placeholder="e.g., Medicine, Engineering, etc." value="{{ user.preferences.education_field }}">
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="pref_job_title" class="form-label">Preferred Job/Designation</label>
+                <input type="text" class="form-control" id="pref_job_title" name="pref_job_title" placeholder="e.g., Doctor, Engineer, Teacher" value="{{ user.preferences.job_title }}">
+              </div>
+              <div class="col-md-6">
+                <label for="pref_min_experience" class="form-label">Minimum Experience (Years)</label>
+                <input type="number" class="form-control" id="pref_min_experience" name="pref_min_experience" min="0" max="50" value="{{ user.preferences.min_experience }}">
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="pref_qualities" class="form-label">Important Qualities</label>
+              <textarea class="form-control" id="pref_qualities" name="pref_qualities" rows="3">{{ user.preferences.qualities }}</textarea>
+            </div>
+            
+            <div class="d-grid gap-2 mt-4">
+              <button type="submit" class="btn btn-custom" id="saveProfileBtn">Save Profile</button>
+              <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteProfileModal">Delete Profile</button>
+              <a href="{{ url_for('user.dashboard') }}" class="btn btn-outline-custom">Back to Dashboard</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Profile Modal -->
+<div class="modal fade" id="deleteProfileModal" tabindex="-1" aria-labelledby="deleteProfileModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteProfileModalLabel">Confirm Delete Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete your profile? This action cannot be undone.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form action="{{ url_for('user.delete_profile') }}" method="POST" style="display: inline;">
+          <button type="submit" class="btn btn-danger">Delete Profile</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Image preview functionality
+    const profilePictureInput = document.getElementById('profile_picture');
+    const profileImagePreview = document.getElementById('profile-image-preview');
+    const profileImagePlaceholder = document.getElementById('profile-image-placeholder');
+    
+    if (profilePictureInput && profileImagePreview) {
+      profilePictureInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+          const file = this.files[0];
+          
+          // Check file size (max 5MB)
+          if (file.size > 5 * 1024 * 1024) {
+            alert('Image size exceeds 5MB. Please choose a smaller image.');
+            this.value = '';
+            return;
+          }
+          
+          const reader = new FileReader();
+          
+          reader.onload = function(e) {
+            profileImagePreview.src = e.target.result;
+            profileImagePreview.classList.remove('d-none');
+            if (profileImagePlaceholder) {
+              profileImagePlaceholder.classList.add('d-none');
+            }
+          };
+          
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}
