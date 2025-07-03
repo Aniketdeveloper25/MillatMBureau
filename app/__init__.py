@@ -5,13 +5,7 @@ import firebase_admin
 from firebase_admin import credentials, db
 import datetime
 from flask_socketio import SocketIO
-
-# Initialize Firebase
-cred = credentials.Certificate("firebase_key.json")
-firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://muslim-nikah-d4ea4-default-rtdb.firebaseio.com/'
-})
-database = db.reference()
+import json
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -22,6 +16,20 @@ socketio = SocketIO()
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-for-testing')
+    
+    # Initialize Firebase with credentials based on environment
+    if not firebase_admin._apps:
+        if os.environ.get('FIREBASE_CREDENTIALS'):
+            # In production, get credentials from environment variable
+            cred_dict = json.loads(os.environ.get('FIREBASE_CREDENTIALS'))
+            cred = credentials.Certificate(cred_dict)
+        else:
+            # In development, get credentials from file
+            cred = credentials.Certificate("firebase_key.json")
+            
+        firebase_admin.initialize_app(cred, {
+            'databaseURL': 'https://muslim-nikah-d4ea4-default-rtdb.firebaseio.com/'
+        })
     
     # Initialize Flask-Login
     login_manager.init_app(app)
@@ -46,6 +54,9 @@ def create_app():
         return {
             'now': datetime.datetime.now()
         }
+    
+    # Database reference
+    database = db.reference()
     
     # Home route - accessible without login
     @app.route('/')
