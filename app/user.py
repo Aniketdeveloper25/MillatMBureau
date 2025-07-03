@@ -5,10 +5,10 @@ import firebase_admin
 from firebase_admin import db, storage
 import uuid
 from datetime import datetime
-import pandas as pd
 import os
 import base64
 from werkzeug.utils import secure_filename
+import sys
 
 user_bp = Blueprint('user', __name__)
 
@@ -33,12 +33,19 @@ class User(UserMixin):
 
 @login_manager.user_loader
 def load_user(user_id):
-    user_data = database.child('users').child(user_id).get()
-    if user_data:
-        # For Realtime Database, get() returns the actual data directly
-        if 'id' not in user_data:
-            user_data['id'] = user_id
-        return User(user_id, user_data)
+    try:
+        if database is None:
+            print("Warning: Database is not initialized in user_loader", file=sys.stderr)
+            return None
+            
+        user_data = database.child('users').child(user_id).get()
+        if user_data:
+            # For Realtime Database, get() returns the actual data directly
+            if 'id' not in user_data:
+                user_data['id'] = user_id
+            return User(user_id, user_data)
+    except Exception as e:
+        print(f"Error in user_loader: {e}", file=sys.stderr)
     return None
 
 @user_bp.route('/register', methods=['GET', 'POST'])
