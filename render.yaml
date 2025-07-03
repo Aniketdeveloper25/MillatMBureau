@@ -3,7 +3,7 @@ services:
     name: muslim-nikah
     env: python
     buildCommand: chmod +x render_build.sh && ./render_build.sh
-    startCommand: gunicorn app:app
+    startCommand: gunicorn wsgi_app:application
     envVars:
       - key: PYTHON_VERSION
         value: 3.9
