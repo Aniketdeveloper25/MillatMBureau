@@ -3,10 +3,12 @@ services:
     name: muslim-nikah
     env: python
     buildCommand: chmod +x render_build.sh && ./render_build.sh
-    startCommand: gunicorn run:app
+    startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.9
       - key: PORT
         value: 10000
+      - key: RENDER
+        value: true
     plan: free 
