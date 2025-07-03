@@ -2,7 +2,7 @@ services:
   - type: web
     name: muslim-nikah
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: chmod +x render_build.sh && ./render_build.sh
     startCommand: gunicorn run:app
     envVars:
       - key: PYTHON_VERSION
