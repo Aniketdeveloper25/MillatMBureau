@@ -5,13 +5,26 @@ import firebase_admin
 from firebase_admin import credentials, db
 import datetime
 from flask_socketio import SocketIO
+import json
 
 # Initialize Firebase
-cred = credentials.Certificate("firebase_key.json")
-firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://muslim-nikah-d4ea4-default-rtdb.firebaseio.com/'
-})
-database = db.reference()
+try:
+    # Try to get credentials from environment variable first (for production)
+    if os.environ.get('FIREBASE_CREDENTIALS'):
+        cred_dict = json.loads(os.environ.get('FIREBASE_CREDENTIALS'))
+        cred = credentials.Certificate(cred_dict)
+    else:
+        # Fall back to file for local development
+        cred = credentials.Certificate("firebase_key.json")
+    
+    firebase_admin.initialize_app(cred, {
+        'databaseURL': 'https://muslim-nikah-d4ea4-default-rtdb.firebaseio.com/'
+    })
+    database = db.reference()
+except Exception as e:
+    print(f"Firebase initialization error: {e}")
+    # Create a placeholder for database if initialization fails
+    database = None
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -51,8 +64,11 @@ def create_app():
     @app.route('/')
     def index():
         # Get all reviews to display on homepage
-        reviews_ref = database.child('reviews').get()
-        reviews = reviews_ref if reviews_ref else {}
+        if database:
+            reviews_ref = database.child('reviews').get()
+            reviews = reviews_ref if reviews_ref else {}
+        else:
+            reviews = {}
         return render_template('index.html', reviews=reviews)
     
     # About Us page - accessible without login
