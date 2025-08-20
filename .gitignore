@@ -44,6 +44,7 @@ logs/
 
 # Firebase
 firebase_key.json
+firebase_key2.json
 
 # Excel files
 *.xlsx
