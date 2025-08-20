@@ -1,19 +1,23 @@
 # Use official Python image
-FROM python:3.10-slim
+FROM python:3.9-slim
 
 # Set work directory
 WORKDIR /app
 
-# Copy files
+# Install system dependencies first
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc python3-dev libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application
 COPY . .
-
-# Install dependencies
-RUN python -m venv /opt/venv && \
-    /opt/venv/bin/pip install --upgrade pip && \
-    /opt/venv/bin/pip install -r requirements.txt
-
-# Activate virtual environment
-ENV PATH="/opt/venv/bin:$PATH"
 
 # Expose port Railway will use
 EXPOSE 5000
