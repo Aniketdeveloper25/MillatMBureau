@@ -25,7 +25,7 @@ COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir --use-deprecated=legacy-resolver -r requirements.txt
 
 # Copy the rest of the application
 COPY . .
@@ -35,3 +35,4 @@ EXPOSE 5000
 
 # Run with gunicorn
 CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:5000"]
+
