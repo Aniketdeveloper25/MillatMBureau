@@ -1,0 +1,78 @@
+/* Video Background Styling for All Devices */
+
+/* Video container styling */
+.video-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -2;
+}
+
+/* Base video styling - improved for all screen sizes */
+#hero-video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: -2;
+    object-fit: cover;
+}
+
+/* Desktop-specific video styling */
+@media (min-width: 768px) {
+    #hero-video {
+        width: 100%;
+        height: 100%;
+        object-position: center center;
+        object-fit: cover;
+    }
+    
+    /* For wider screens, ensure the video is not stretched */
+    @media (min-aspect-ratio: 16/9) {
+        #hero-video {
+            width: 100%;
+            height: auto;
+        }
+    }
+    
+    /* For taller screens, ensure the video is not cropped */
+    @media (max-aspect-ratio: 16/9) {
+        #hero-video {
+            width: auto;
+            height: 100%;
+        }
+    }
+}
+
+/* Mobile-specific video styling */
+@media (max-width: 767.98px) {
+    #hero-video {
+        object-position: center;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+/* Portrait orientation */
+@media (orientation: portrait) and (max-width: 767.98px) {
+    #hero-video {
+        object-position: center;
+        object-fit: cover;
+    }
+}
+
+/* Landscape orientation */
+@media (orientation: landscape) and (max-width: 767.98px) {
+    #hero-video {
+        object-position: center;
+        object-fit: cover;
+    }
+} 

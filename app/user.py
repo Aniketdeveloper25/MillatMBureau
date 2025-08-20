@@ -1,14 +1,14 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_user, logout_user, login_required, current_user, UserMixin
-from app import login_manager, database
+from app import login_manager, database, socketio
 import firebase_admin
 from firebase_admin import db, storage
 import uuid
 from datetime import datetime
-import pandas as pd
 import os
 import base64
 from werkzeug.utils import secure_filename
+import sys
 
 user_bp = Blueprint('user', __name__)
 
@@ -33,12 +33,18 @@ class User(UserMixin):
 
 @login_manager.user_loader
 def load_user(user_id):
-    user_data = database.child('users').child(user_id).get()
-    if user_data:
-        # For Realtime Database, get() returns the actual data directly
-        if 'id' not in user_data:
-            user_data['id'] = user_id
-        return User(user_id, user_data)
+    try:
+        if database is None:
+            print("Warning: Database is not initialized in user_loader", file=sys.stderr)
+            return None
+        user_data = database.child('users').child(user_id).get()
+        if user_data:
+            # For Realtime Database, get() returns the actual data directly
+            if 'id' not in user_data:
+                user_data['id'] = user_id
+            return User(user_id, user_data)
+    except Exception as e:
+        print(f"Error in user_loader: {e}", file=sys.stderr)
     return None
 
 @user_bp.route('/register', methods=['GET', 'POST'])
@@ -192,37 +198,92 @@ def dashboard():
     
     return render_template('user/dashboard.html', user=user_data)
 
-@user_bp.route('/delete_profile', methods=['POST'])
+@user_bp.route('/chat')
 @login_required
-def delete_profile():
+def chat():
+    # Get user profile data
+    user_data = database.child('users').child(current_user.id).get()
+    
+    # Make sure user_data has the ID field
+    if user_data and 'id' not in user_data:
+        user_data['id'] = current_user.id
+    
+    # Get admin chat messages
+    chat_messages_ref = database.child('admin_chat').get()
+    chat_messages = chat_messages_ref if chat_messages_ref else {}
+    
+    # Filter messages for current user
+    user_messages = {}
+    if chat_messages:
+        for msg_id, msg in chat_messages.items():
+            if msg.get('sender_id') == current_user.id or msg.get('receiver_id') == current_user.id:
+                user_messages[msg_id] = msg
+    
+    return render_template('user/chat.html', user=user_data, chat_messages=user_messages)
+
+@user_bp.route('/send_admin_message', methods=['POST'])
+@login_required
+def send_admin_message():
     try:
-        user_id = current_user.id
-        
-        # Delete user's conversations and messages
-        conversations_ref = database.child('conversations')
-        conversations_data = conversations_ref.get()
-        for conv_data in conversations_data:
-            conv_id = conv_data.key()
-            conv_data = conv_data.val()
-            participants = conv_data.get('participants', [])
-            if user_id in participants:
-                conversations_ref.child(conv_id).remove()
+        message = request.form.get('message')
+        if not message:
+            return jsonify({'status': 'error', 'message': 'No message provided'}), 400
+            
+        # Find admin user by iterating through all users (avoid Firebase indexing issue)
+        try:
+            all_users = database.child('users').get()
+            admin_id = None
+            
+            if all_users:
+                for user_id, user_data in all_users.items():
+                    if user_data and user_data.get('is_admin', False):
+                        admin_id = user_id
+                        break
+            
+            if not admin_id:
+                print("Error: Admin user not found")
+                return jsonify({'status': 'error', 'message': 'Admin user not found'}), 404
+            
+            # Create message data
+            message_data = {
+                'sender_id': current_user.id,
+                'sender_name': current_user.fullname,
+                'receiver_id': admin_id,
+                'message': message,
+                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'is_read': False,
+                'type': 'user_to_admin'
+            }
+            
+            try:
+                database.child('admin_chat').push(message_data)
                 
-                # Delete associated messages
-                messages_ref = database.child('messages').child(conv_id)
-                messages_ref.remove()
-        
-        # Delete user account
-        database.child('users').child(user_id).remove()
-        
-        # Logout user
-        logout_user()
-        flash('Your profile has been deleted successfully.', 'success')
-        return redirect(url_for('user.register'))
-        
+                # Emit Socket.IO event to notify admin in real-time
+                try:
+                    socketio.emit('new_user_message', {
+                        'sender_id': current_user.id,
+                        'sender_name': current_user.fullname,
+                        'receiver_id': admin_id,
+                        'message': message,
+                        'timestamp': message_data['timestamp'],
+                        'is_read': False,
+                        'type': 'user_to_admin'
+                    }, room=admin_id)
+                    print(f"Socket.IO event emitted to admin {admin_id} for message from user {current_user.id}")
+                except Exception as socket_error:
+                    print(f"Socket.IO error (non-critical): {str(socket_error)}")
+                    # Continue even if socket emission fails
+                
+                return jsonify({'status': 'success', 'message': 'Message sent successfully'})
+            except Exception as db_error:
+                print(f"Database error: {str(db_error)}")
+                return jsonify({'status': 'error', 'message': f'Database error: {str(db_error)}'}), 500
+        except Exception as e:
+            print(f"Error finding admin: {str(e)}")
+            return jsonify({'status': 'error', 'message': f'Error finding admin: {str(e)}'}), 500
     except Exception as e:
-        flash(f'Error deleting profile: {str(e)}', 'danger')
-        return redirect(url_for('user.profile'))
+        print(f"General error in send_admin_message: {str(e)}")
+        return jsonify({'status': 'error', 'message': f'Server error: {str(e)}'}), 500
 
 @user_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
@@ -403,173 +464,36 @@ def add_review():
     
     return redirect(url_for('index'))
 
-@user_bp.route('/messages')
-@user_bp.route('/messages/<contact_id>')
+@user_bp.route('/delete_profile', methods=['POST'])
 @login_required
-def messages(contact_id=None):
+def delete_profile():
+    """Delete user profile."""
     try:
-        # Get all conversations for the current user
-        conversations_ref = database.child('conversations')
-        conversations_data = conversations_ref.get()
-
-        # Filter conversations involving the current user
-        user_conversations = []
-        current_contact = None
-        chat_messages = []
-
-        if conversations_data:
-            for conv_id, conv_data in conversations_data.items():
-                participants = conv_data.get('participants', [])
-                if current_user.id in participants:
-                    try:
-                        # Get the other participant
-                        other_id = [p for p in participants if p != current_user.id][0]
-
-                        # Get user data for the other participant
-                        other_user_ref = database.child('users').child(other_id)
-                        other_user_data = other_user_ref.get()
-                        
-                        if not other_user_data:
-                            continue
-                        
-                        # Create conversation object
-                        conversation = {
-                            'id': conv_id,
-                            'other_user': {
-                                'id': other_id,
-                                'name': other_user_data.get('fullname', 'Unknown User'),
-                                'profile_pic': other_user_data.get('profile_pic', '')
-                            },
-                            'last_message': conv_data.get('last_message', ''),
-                            'last_time': conv_data.get('last_time', '')
-                        }
-                        
-                        user_conversations.append(conversation)
-                        
-                        # If this is the selected conversation
-                        if contact_id and other_id == contact_id:
-                            current_contact = conversation['other_user']
-                            
-                            # Get messages for this conversation
-                            messages_ref = database.child('messages').child(conv_id)
-                            messages_data = messages_ref.get()
-                            
-                            if messages_data:
-                                for msg_id, msg in messages_data.items():
-                                    if isinstance(msg, dict):  # Make sure it's a valid message
-                                        chat_messages.append(msg)
-                            
-                            # Sort messages by timestamp
-                            chat_messages.sort(key=lambda x: x.get('timestamp', ''))
-                    
-                    except Exception as e:
-                        print(f"Error processing conversation: {e}")
-                        continue
+        user_id = current_user.id
         
-        return render_template(
-            'user/messages.html',
-            conversations=user_conversations,
-            current_contact=current_contact,
-            messages=chat_messages
-        )
-    
+        # Delete user's conversations
+        conversations_ref = database.child('conversations')
+        conversations_data = conversations_ref.get() or []
+        
+        for conv_data in conversations_data:
+            conv_id = conv_data.key()
+            conv_data = conv_data.val()
+            participants = conv_data.get('participants', [])
+            if user_id in participants:
+                conversations_ref.child(conv_id).delete()
+                
+                # Delete associated messages
+                messages_ref = database.child('messages').child(conv_id)
+                messages_ref.delete()
+        
+        # Delete user account
+        database.child('users').child(user_id).delete()
+        
+        # Logout user
+        logout_user()
+        flash('Your profile has been deleted successfully.', 'success')
+        return redirect(url_for('user.register'))
+        
     except Exception as e:
-        flash(f"Error loading messages: {str(e)}", 'danger')
-        return redirect(url_for('user.dashboard'))
-
-@user_bp.route('/send_message/<recipient_id>', methods=['GET', 'POST'])
-@login_required
-def send_message(recipient_id):
-    message_content = request.form.get('message')
-
-    if not message_content and request.method == 'POST':
-        flash('Message cannot be empty', 'danger')
-        return redirect(url_for('user.messages'))
-
-    # If it's a GET request, create a new conversation if needed and redirect to messages
-    if request.method == 'GET':
-        # Check if this is a new conversation
-        conversations_ref = database.child('conversations')
-        conversations_data = conversations_ref.get()
-
-        conversation_id = None
-        is_new_conversation = True
-
-        # Look for existing conversation
-        if conversations_data:
-            for conv_id, conv_data in conversations_data.items():
-                participants = conv_data.get('participants', [])
-                if current_user.id in participants and recipient_id in participants:
-                    conversation_id = conv_id
-                    is_new_conversation = False
-                    break
-
-        # Create new conversation if needed
-        if is_new_conversation:
-            conversation_id = str(uuid.uuid4())
-            conversation_data = {
-                'participants': [current_user.id, recipient_id],
-                'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                'last_message': '',
-                'last_time': ''
-            }
-            conversations_ref.child(conversation_id).set(conversation_data)
-
-        return redirect(url_for('user.messages', contact_id=recipient_id))
-
-    # Handle POST request (sending a message)
-    try:
-        # Find conversation ID
-        conversations_ref = database.child('conversations')
-        conversations_data = conversations_ref.get()
-        
-        conversation_id = None
-        
-        if conversations_data:
-            for conv_id, conv_data in conversations_data.items():
-                participants = conv_data.get('participants', [])
-                if current_user.id in participants and recipient_id in participants:
-                    conversation_id = conv_id
-                    break
-        
-        if not conversation_id:
-            # Create new conversation
-            conversation_id = str(uuid.uuid4())
-            conversation_data = {
-                'participants': [current_user.id, recipient_id],
-                'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                'last_message': message_content,
-                'last_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            }
-            conversations_ref.child(conversation_id).set(conversation_data)
-        else:
-            # Update last message and time
-            conversations_ref.child(conversation_id).update({
-                'last_message': message_content,
-                'last_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            })
-        
-        # Make sure conversation messages node exists
-        conv_messages_ref = database.child('messages').child(conversation_id)
-        conv_messages_data = conv_messages_ref.get()
-        if conv_messages_data is None:
-            conv_messages_ref.set({})
-        
-        # Create message
-        message_id = str(uuid.uuid4())
-        message_data = {
-            'sender_id': current_user.id,
-            'sender_name': current_user.fullname,
-            'content': message_content,
-            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'read': False
-        }
-        
-        # Save message
-        conv_messages_ref.child(message_id).set(message_data)
-        
-        return redirect(url_for('user.messages', contact_id=recipient_id))
-    
-    except Exception as e:
-        flash(f"Error sending message: {str(e)}", 'danger')
-        return redirect(url_for('user.messages'))
+        flash(f'Error deleting profile: {str(e)}', 'danger')
+        return redirect(url_for('user.profile'))

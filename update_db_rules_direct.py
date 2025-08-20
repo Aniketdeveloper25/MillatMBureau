@@ -1,90 +1,85 @@
 import firebase_admin
-from firebase_admin import credentials
+from firebase_admin import credentials, db
 import json
-import requests
 import os
+import sys
 
 def update_database_rules():
-    print("Updating database rules...")
-    
-    # Load the service account key
-    with open('firebase_key.json', 'r') as f:
-        service_account = json.load(f)
-    
-    # Extract project ID
-    project_id = service_account['project_id']
-    
-    # Get access token
-    print("Getting access token...")
-    auth_url = f"https://oauth2.googleapis.com/token"
-    auth_data = {
-        "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
-        "assertion": create_jwt(service_account)
-    }
-    
-    auth_response = requests.post(auth_url, data=auth_data)
-    if auth_response.status_code != 200:
-        print(f"Error getting access token: {auth_response.text}")
-        return False
-    
-    access_token = auth_response.json().get('access_token')
-    
-    # Read the rules file
-    with open('database.rules.json', 'r') as f:
-        rules = json.load(f)
-    
-    # Update the database rules directly
-    print(f"Updating rules for database {project_id}-default-rtdb...")
-    rules_url = f"https://{project_id}-default-rtdb.firebaseio.com/.settings/rules.json"
-    
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
-    }
-    
-    # Send the update request
-    update_response = requests.put(
-        rules_url, 
-        headers=headers, 
-        json=rules
-    )
-    
-    if update_response.status_code == 200:
-        print("Database rules updated successfully!")
+    """Update Firebase database rules directly."""
+    try:
+        # Try to get credentials from environment variable first (for production)
+        if os.environ.get('FIREBASE_CREDENTIALS'):
+            print("Using Firebase credentials from environment variable")
+            cred_dict = json.loads(os.environ.get('FIREBASE_CREDENTIALS'))
+            cred = credentials.Certificate(cred_dict)
+        else:
+            print("Using Firebase credentials from file")
+            # Try both firebase_key.json and firebase_key2.json
+            try:
+                cred = credentials.Certificate("firebase_key.json")
+                print("Successfully loaded firebase_key.json")
+            except Exception as e:
+                print(f"Failed to load firebase_key.json: {e}")
+                try:
+                    cred = credentials.Certificate("firebase_key2.json")
+                    print("Successfully loaded firebase_key2.json")
+                except Exception as e:
+                    print(f"Failed to load firebase_key2.json: {e}")
+                    raise Exception("No valid Firebase credentials found")
+        
+        # Initialize Firebase app if not already initialized
+        if not firebase_admin._apps:
+            firebase_admin.initialize_app(cred, {
+                'databaseURL': 'https://muslim-nikah-d4ea4-default-rtdb.firebaseio.com/'
+            })
+            print("Firebase app initialized successfully")
+        else:
+            print("Firebase app already initialized")
+        
+        # Load database rules from file
+        with open('database.rules.json', 'r') as f:
+            rules = json.load(f)
+            
+        print(f"Loaded database rules: {json.dumps(rules, indent=2)}")
+        
+        # Update database rules
+        db_ref = db.reference('/')
+        db_ref.set_rules(rules["rules"])
+        print("Database rules updated successfully")
+        
+        # Test database connection
+        test_ref = db.reference('/test')
+        test_ref.set({"updated_at": firebase_admin.db.ServerValue.TIMESTAMP})
+        print("Database connection test successful")
+        
+        # Test reviews access
+        reviews_ref = db.reference('/reviews')
+        test_review = {
+            "test_review": {
+                "user_name": "Test User",
+                "rating": 5,
+                "comment": "Test Comment",
+                "date": "2023-01-01 00:00:00"
+            }
+        }
+        reviews_ref.update(test_review)
+        print("Reviews access test successful")
+        
+        # Clean up test review
+        test_review_ref = db.reference('/reviews/test_review')
+        test_review_ref.delete()
+        print("Test review cleaned up successfully")
+        
         return True
-    else:
-        print(f"Error updating database rules: {update_response.text}")
+    except Exception as e:
+        print(f"Error updating database rules: {e}")
         return False
-
-def create_jwt(service_account):
-    import jwt
-    import datetime
-    
-    # Get the private key from the service account
-    private_key = service_account['private_key']
-    client_email = service_account['client_email']
-    
-    # Create JWT payload
-    now = datetime.datetime.utcnow()
-    payload = {
-        'iss': client_email,
-        'sub': client_email,
-        'aud': 'https://oauth2.googleapis.com/token',
-        'iat': now,
-        'exp': now + datetime.timedelta(minutes=60),
-        'scope': 'https://www.googleapis.com/auth/firebase.database https://www.googleapis.com/auth/cloud-platform'
-    }
-    
-    # Sign the JWT
-    signed_jwt = jwt.encode(payload, private_key, algorithm='RS256')
-    return signed_jwt
 
 if __name__ == "__main__":
     success = update_database_rules()
-    
     if success:
-        print("Database rules update successful!")
-        exit(0)
+        print("Database rules updated successfully")
+        sys.exit(0)
     else:
-        print("Database rules update failed!")
-        exit(1) 
+        print("Failed to update database rules")
+        sys.exit(1) 

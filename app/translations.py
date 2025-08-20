@@ -9,6 +9,7 @@ translations = {
     # Hindi
     'hi': {
         'Dashboard': 'डैशबोर्ड',
+        'Back to Dashboard': 'डैशबोर्ड पर वापस जाएं',
         'Login': 'लॉग इन करें',
         'Logout': 'लॉगआउट',
         'Register': 'पंजीकरण करें',
@@ -78,6 +79,7 @@ translations = {
     # Urdu
     'ur': {
         'Dashboard': 'ڈیش بورڈ',
+        'Back to Dashboard': 'ڈیش بورڈ پر واپس جائیں',
         'Login': 'لاگ ان',
         'Logout': 'لاگ آؤٹ',
         'Register': 'رجسٹر',
@@ -147,6 +149,7 @@ translations = {
     # Islamic
     'is': {
         'Dashboard': 'Control Panel',
+        'Back to Dashboard': 'Return to Control Panel',
         'Login': 'Enter Account',
         'Logout': 'Exit Account',
         'Register': 'Create Account',

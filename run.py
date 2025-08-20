@@ -22,8 +22,8 @@ if __name__ == '__main__':
         port = int(os.environ.get("PORT", 10000))
         socketio.run(app, host='0.0.0.0', port=port, debug=False)
     else:
-        # In development, use port detection
-        port_options = [5000, 5001]
+            # In development, use port detection
+        port_options = [5000, 5002]
         available_port = None
         
         for port in port_options:

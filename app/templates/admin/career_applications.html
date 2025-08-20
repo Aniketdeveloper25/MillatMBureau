@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% block title %}Applications for {{ career.title }} - Admin Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Override background for admin panel */
+  body::before {
+    background-color: rgba(245, 245, 245, 0.95) !important;
+  }
+  
+  #hero-video {
+    display: none !important;
+  }
+  
+  .custom-primary {
+    background-color: #33a3ac !important;
+    border-color: #33a3ac !important;
+  }
+  
+  .custom-primary-text {
+    color: #33a3ac !important;
+  }
+  
+  .badge-custom {
+    background-color: #33a3ac !important;
+    color: white !important;
+  }
+  
+  .badge-pending {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+  }
+  
+  .badge-approved {
+    background-color: #28a745 !important;
+    color: white !important;
+  }
+  
+  .badge-rejected {
+    background-color: #dc3545 !important;
+    color: white !important;
+  }
+  
+  .btn-custom {
+    background-color: #33a3ac;
+    border-color: #33a3ac;
+    color: white;
+  }
+  
+  .btn-custom:hover {
+    background-color: #2a8a91;
+    border-color: #2a8a91;
+    color: white;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2>Applications for: {{ career.title }}</h2>
+          <p class="text-muted mb-0">
+            <strong>Location:</strong> {{ career.location if career.location else 'Not specified' }} | 
+            <strong>Type:</strong> {{ career.job_type|title if career.job_type else 'Full-time' }} | 
+            <strong>Status:</strong> <span class="badge badge-{{ 'custom' if career.status == 'active' else 'secondary' }}">{{ career.status|title }}</span>
+          </p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}#careers" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="card">
+        <div class="card-header custom-primary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-users me-2"></i>
+            Job Applications ({{ applications|length }})
+          </h5>
+        </div>
+        <div class="card-body">
+          {% if applications %}
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th>#</th>
+                    <th>Applicant Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Applied Date</th>
+                    <th>Cover Letter</th>
+                    <th>Resume</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for app_id, application in applications.items() %}
+                  <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>
+                      {% if application.user_data and application.user_data.fullname %}
+                        {{ application.user_data.fullname }}
+                      {% else %}
+                        Unknown User
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if application.user_data and application.user_data.email %}
+                        {{ application.user_data.email }}
+                      {% else %}
+                        Not available
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if application.user_data and application.user_data.phone %}
+                        {{ application.user_data.phone }}
+                      {% else %}
+                        Not available
+                      {% endif %}
+                    </td>
+                    <td>{{ application.applied_at if application.applied_at else 'Not available' }}</td>
+                    <td>
+                      {% if application.cover_letter %}
+                        <button class="btn btn-sm btn-outline-info" onclick="showCoverLetter('{{ app_id }}')">
+                          View Cover Letter
+                        </button>
+                      {% else %}
+                        <span class="text-muted">Not provided</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if application.resume_url %}
+                        <a href="{{ application.resume_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                          <i class="fas fa-download me-1"></i> Download
+                        </a>
+                      {% else %}
+                        <span class="text-muted">Not provided</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <span class="badge badge-{{ 'approved' if application.status == 'approved' else 'rejected' if application.status == 'rejected' else 'pending' }}">
+                        {{ application.status|default('pending')|title }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="btn-group">
+                        <form method="POST" action="{{ url_for('admin.update_application_status', app_id=app_id) }}" style="display: inline;">
+                          <input type="hidden" name="status" value="approved">
+                          <button type="submit" class="btn btn-sm btn-success" 
+                                  onclick="return confirm('Are you sure you want to approve this application?')">
+                            Approve
+                          </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('admin.update_application_status', app_id=app_id) }}" style="display: inline;">
+                          <input type="hidden" name="status" value="rejected">
+                          <button type="submit" class="btn btn-sm btn-danger" 
+                                  onclick="return confirm('Are you sure you want to reject this application?')">
+                            Reject
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="text-center py-5">
+              <div class="mb-4">
+                <i class="fas fa-inbox fa-3x text-muted"></i>
+              </div>
+              <h4>No Applications Yet</h4>
+              <p class="text-muted">No one has applied for this position yet. Applications will appear here when users submit them.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if career.description or career.requirements %}
+      <div class="card mt-4">
+        <div class="card-header">
+          <h5 class="mb-0">Job Details</h5>
+        </div>
+        <div class="card-body">
+          {% if career.description %}
+            <div class="mb-3">
+              <h6>Description:</h6>
+              <p>{{ career.description }}</p>
+            </div>
+          {% endif %}
+          {% if career.requirements %}
+            <div class="mb-3">
+              <h6>Requirements:</h6>
+              <p>{{ career.requirements }}</p>
+            </div>
+          {% endif %}
+          {% if career.salary %}
+            <div class="mb-3">
+              <h6>Salary:</h6>
+              <p>{{ career.salary }}</p>
+            </div>
+          {% endif %}
+          {% if career.deadline %}
+            <div class="mb-3">
+              <h6>Application Deadline:</h6>
+              <p>{{ career.deadline }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Cover Letter Modal -->
+<div class="modal fade" id="coverLetterModal" tabindex="-1" aria-labelledby="coverLetterModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="coverLetterModalLabel">Cover Letter</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="coverLetterContent">
+        <!-- Cover letter content will be loaded here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const applications = {{ applications|tojson }};
+
+function showCoverLetter(appId) {
+    const application = applications[appId];
+    if (!application || !application.cover_letter) {
+        alert('Cover letter not available');
+        return;
+    }
+    
+    document.getElementById('coverLetterContent').innerHTML = `
+        <div class="p-3 bg-light rounded">
+            <p><strong>Applicant:</strong> ${application.user_data?.fullname || 'Unknown'}</p>
+            <p><strong>Applied on:</strong> ${application.applied_at || 'Unknown'}</p>
+            <hr>
+            <div style="white-space: pre-wrap; word-wrap: break-word;">${application.cover_letter}</div>
+        </div>
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('coverLetterModal'));
+    modal.show();
+}
+
+// Auto-navigate to careers tab when going back to dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    const backButton = document.querySelector('a[href*="dashboard#careers"]');
+    if (backButton) {
+        backButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = '{{ url_for("admin.dashboard") }}';
+            
+            // After navigation, activate careers tab
+            setTimeout(function() {
+                if (window.location.pathname.includes('dashboard')) {
+                    const careersTab = document.getElementById('careers-tab');
+                    if (careersTab) {
+                        careersTab.click();
+                    }
+                }
+            }, 100);
+        });
+    }
+});
+</script>
+{% endblock %}

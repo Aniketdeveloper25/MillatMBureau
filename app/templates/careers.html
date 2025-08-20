@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ _('Careers') }} - MuslimNikah.com{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mb-5">
+                <h1 class="display-4 mb-3">{{ _('Career Opportunities') }}</h1>
+                <p class="lead">{{ _('Join our team and help build meaningful connections in the Muslim community') }}</p>
+            </div>
+        </div>
+    </div>
+    
+    {% if career_opportunities %}
+    <div class="row">
+        {% for career_id, career in career_opportunities.items() %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{{ career.title }}</h5>
+                    <small class="text-muted">
+                        {% if career.location %}{{ career.location }} • {% endif %}
+                        {{ career.job_type|default('Full-time') }}
+                    </small>
+                </div>
+                <div class="card-body">
+                    {% if career.description %}
+                    <p class="card-text">{{ career.description[:150] }}{% if career.description|length > 150 %}...{% endif %}</p>
+                    {% endif %}
+                    
+                    {% if career.requirements %}
+                    <div class="mb-3">
+                        <strong>{{ _('Requirements:') }}</strong>
+                        <p class="small mt-1">{{ career.requirements[:100] }}{% if career.requirements|length > 100 %}...{% endif %}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if career.salary %}
+                    <div class="mb-3">
+                        <strong>{{ _('Salary:') }}</strong>
+                        <span class="text-primary">{{ career.salary }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if career.deadline %}
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar-alt me-1"></i>
+                            {{ _('Application Deadline:') }} {{ career.deadline }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    {% if current_user.is_authenticated %}
+                        <button class="btn btn-primary btn-sm" onclick="applyForJob('{{ career_id }}', '{{ career.title }}')">
+                            {{ _('Apply Now') }}
+                        </button>
+                    {% else %}
+                        <a href="{{ url_for('user.login') }}" class="btn btn-primary btn-sm">
+                            {{ _('Login to Apply') }}
+                        </a>
+                    {% endif %}
+                    <button class="btn btn-outline-secondary btn-sm" onclick="showJobDetails('{{ career_id }}')">
+                        {{ _('View Details') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-briefcase fa-3x text-muted"></i>
+                </div>
+                <h3 class="mb-3">{{ _('No Current Openings') }}</h3>
+                <p class="text-muted">{{ _('We currently have no active job openings. Please check back later for new opportunities.') }}</p>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">{{ _('Return to Home') }}</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Job Details Modal -->
+<div class="modal fade" id="jobDetailsModal" tabindex="-1" aria-labelledby="jobDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="jobDetailsModalLabel">{{ _('Job Details') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="jobDetailsContent">
+                <!-- Job details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Close') }}</button>
+                {% if current_user.is_authenticated %}
+                <button type="button" class="btn btn-primary" id="applyFromModal">{{ _('Apply Now') }}</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Application Modal -->
+{% if current_user.is_authenticated %}
+<div class="modal fade" id="applicationModal" tabindex="-1" aria-labelledby="applicationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="applicationModalLabel">{{ _('Apply for Job') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="applicationForm" method="POST" action="{{ url_for('apply_for_job') }}" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" id="careerIdInput" name="career_id" value="">
+                    <div class="mb-3">
+                        <label for="coverLetter" class="form-label">{{ _('Cover Letter') }}</label>
+                        <textarea class="form-control" id="coverLetter" name="cover_letter" rows="5" 
+                                  placeholder="{{ _('Tell us why you are interested in this position...') }}" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="resume" class="form-label">{{ _('Resume/CV') }}</label>
+                        <input type="file" class="form-control" id="resume" name="resume" 
+                               accept=".pdf,.doc,.docx" required>
+                        <div class="form-text">{{ _('Please upload your resume in PDF or Word format') }}</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ _('Submit Application') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .job-details-container h5 {
+        color: #333;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+    
+    .job-details-container .bg-light {
+        background-color: #f8f9fa;
+        border-left: 3px solid #007bff;
+    }
+    
+    #jobDetailsModal .modal-body {
+        padding: 1.5rem;
+    }
+    
+    #jobDetailsModal .modal-content {
+        border-radius: 0.5rem;
+        border: none;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+</style>
+{% endblock %}
+{% block extra_js %}
+<script>
+const careerOpportunities = {{ career_opportunities|tojson }};
+
+function showJobDetails(careerId) {
+    const career = careerOpportunities[careerId];
+    if (!career) return;
+    
+    const content = document.getElementById('jobDetailsContent');
+    content.innerHTML = `
+        <div class="job-details-container">
+            <h4 class="mb-3">${career.title}</h4>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    ${career.location ? `<p><strong>Location:</strong> ${career.location}</p>` : ''}
+                    ${career.job_type ? `<p><strong>Job Type:</strong> ${career.job_type}</p>` : ''}
+                </div>
+                <div class="col-md-6">
+                    ${career.salary ? `<p><strong>Salary:</strong> ${career.salary}</p>` : ''}
+                    ${career.deadline ? `<p><strong>Application Deadline:</strong> ${career.deadline}</p>` : ''}
+                </div>
+            </div>
+            ${career.description ? `<div class="mb-4"><h5>Description</h5><div class="p-3 bg-light rounded">${career.description}</div></div>` : ''}
+            ${career.requirements ? `<div class="mb-4"><h5>Requirements</h5><div class="p-3 bg-light rounded">${career.requirements}</div></div>` : ''}
+        </div>
+    `;
+    
+    // Set up apply button in modal
+    const applyBtn = document.getElementById('applyFromModal');
+    if (applyBtn) {
+        applyBtn.onclick = () => applyForJob(careerId, career.title);
+    }
+    
+    // Remove any existing backdrops
+    const existingBackdrops = document.querySelectorAll('.modal-backdrop');
+    existingBackdrops.forEach(backdrop => backdrop.remove());
+    
+    // Initialize modal with specific options
+    const jobDetailsModalEl = document.getElementById('jobDetailsModal');
+    const modal = new bootstrap.Modal(jobDetailsModalEl, {
+        backdrop: false,  // Disable automatic backdrop
+        keyboard: true    // Allow keyboard navigation
+    });
+    
+    // Show modal
+    modal.show();
+    
+    // Make sure body overflow is not hidden
+    document.body.style.overflow = 'auto';
+    document.body.style.paddingRight = '0';
+}
+
+{% if current_user.is_authenticated %}
+function applyForJob(careerId, jobTitle) {
+    document.getElementById('careerIdInput').value = careerId;
+    document.getElementById('applicationModalLabel').textContent = `Apply for ${jobTitle}`;
+    
+    // Hide job details modal if open
+    const jobDetailsModal = bootstrap.Modal.getInstance(document.getElementById('jobDetailsModal'));
+    if (jobDetailsModal) {
+        jobDetailsModal.hide();
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('applicationModal'));
+    modal.show();
+}
+
+document.getElementById('applicationForm').addEventListener('submit', function(e) {
+    // Form will submit normally to the server
+    const submitBtn = this.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...';
+        submitBtn.disabled = true;
+    }
+});
+{% else %}
+function applyForJob(careerId, jobTitle) {
+    alert('{{ _("Please login to apply for this position.") }}');
+    window.location.href = '{{ url_for("user.login") }}';
+}
+{% endif %}
+</script>
+{% endblock %}

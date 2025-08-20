@@ -1,0 +1,68 @@
+Presentation Flow
+
+1. Homepage Demonstration
+
+	the clean homepage with the logo and background
+	Point out the responsive design that works on both mobile and desktop
+	Highlight the navigation menu and registration options
+
+2. User Journey
+
+   -Registration Process
+	Click "Register" in the navigation menu
+	Fill out the registration form with sample data
+	Submit the form to create a new user account
+
+   -User Login
+
+	Navigate to the login page
+	Enter credentials
+	user dashboard after successful login
+
+   -User Profile
+
+	users can complete their profile
+	preference settings - according to male and female preferences like job, education, and other
+	the matching algorithm uses this information
+
+3. Admin Features
+
+   -Admin Login
+
+	Open Common login panel
+	Login with admin credentials
+
+   -Admin Dashboard Overview
+
+	Main dashboard with statistics
+	the different sections (Users, Matches, Reviews, Create Matches)
+
+   -User Management
+	Navigate to the Users tab----
+		Demonstration of the new search functionality:
+			Search by name
+			Search by city/state/country (new feature)
+			Filter by job title
+			Filter by education level
+		View of detailed user profiles
+
+   -Match Management
+		Navigate to the Matches tab----
+			Create individual matches
+			Demonstration of "Create All Possible Matches" feature
+			Match status updates (Accept/Reject)
+
+   -Review Management
+		Navigate to the Reviews tab----
+			Admins can delete user reviews
+
+4. Key Technical Features
+	-Responsive Design
+	-Demonstrate the site on different screen sizes
+	-Show how the background image adapts to different devices
+	-Real-time Updates
+	-Explain the Socket.IO implementation for real-time notifications
+	-Show how changes appear instantly without page refresh
+	-Data Export
+	-Demonstrate the XLS export feature
+	-Show how filters apply to exported data

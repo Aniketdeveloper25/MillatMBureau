@@ -1,0 +1,227 @@
+/* Mobile Optimizations CSS - Fix for carousel and responsive issues */
+
+/* Mobile carousel - FORCE WORKING ANIMATION */
+@media (max-width: 767.98px) {
+    
+    /* Carousel Container Mobile Fixes */
+    .fade-carousel-container {
+        height: 160px !important;
+        margin: 15px 0 !important;
+        padding: 5px 0 !important;
+        overflow: hidden !important;
+        position: relative !important;
+        width: 100% !important;
+    }
+    
+    /* Override ALL track properties for mobile - PERFECT SEAMLESS LOOP */
+    .fade-carousel-track {
+        display: flex !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 300% !important; /* Same as desktop for proper loop calculation */
+        height: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        animation: mobile-carousel-scroll 5s linear infinite !important; /* Mobile-specific animation */
+        animation-play-state: running !important;
+        will-change: transform !important;
+        -webkit-transform: translateZ(0) !important;
+        transform: translateZ(0) !important;
+        -webkit-backface-visibility: hidden !important;
+        backface-visibility: hidden !important;
+    }
+    
+    /* Mobile-specific carousel animation for perfect looping */
+    @keyframes mobile-carousel-scroll {
+        0% {
+            transform: translateX(0) !important;
+        }
+        100% {
+            transform: translateX(-66.67%) !important; /* Same as desktop for seamless loop */
+        }
+    }
+    
+    /* Carousel Items Mobile Sizing - OPTIMIZED FOR ALL 10 IMAGES */
+    .fade-carousel-item {
+        flex: 0 0 130px !important; /* Slightly smaller to fit more images */
+        height: 120px !important;
+        margin: 0 6px !important; /* Reduced margin for more space */
+        min-width: 130px !important;
+        max-width: 130px !important;
+        border-radius: 8px !important;
+        overflow: hidden !important;
+        background-color: white !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.12) !important;
+        position: relative !important;
+        flex-shrink: 0 !important;
+        flex-grow: 0 !important;
+    }
+    
+    /* Carousel Images Mobile Optimizations - CLEAR VISIBILITY */
+    .fade-carousel-item img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;
+        padding: 4px !important;
+        border-radius: 8px !important;
+        display: block !important;
+        margin: 0 auto !important;
+        background-color: white !important;
+    }
+    
+    /* Light fade effects on mobile for better edge visibility */
+    .fade-carousel-container::before,
+    .fade-carousel-container::after {
+        width: 25px !important;
+        content: "" !important;
+        position: absolute !important;
+        top: 0 !important;
+        height: 100% !important;
+        z-index: 3 !important;
+        pointer-events: none !important;
+    }
+    
+    .fade-carousel-container::before {
+        left: 0 !important;
+        background: linear-gradient(to right, rgba(248,249,250,0.4) 0%, rgba(248,249,250,0) 100%) !important;
+    }
+    
+    .fade-carousel-container::after {
+        right: 0 !important;
+        background: linear-gradient(to left, rgba(248,249,250,0.4) 0%, rgba(248,249,250,0) 100%) !important;
+    }
+    
+    /* Disable all transform effects on mobile */
+    .fade-carousel-item,
+    .fade-carousel-item:hover,
+    .fade-carousel-track:not(:hover) .fade-carousel-item:nth-child(n) {
+        transform: none !important;
+    }
+    
+    /* Mobile Image Sizing Consistency */
+    .welcome-container img {
+        max-width: 85% !important;
+        height: auto !important;
+        margin: 5px auto 15px auto !important;
+        display: block !important;
+    }
+    
+    /* Register Button Mobile Consistency */
+    .register-btn-container {
+        margin: 15px 0 !important;
+        text-align: center !important;
+        padding: 0 10px !important;
+    }
+    
+    .register-btn-container .register-btn {
+        max-width: 220px !important; /* SMALLER SIZE FOR MOBILE */
+        width: 80% !important;
+        height: auto !important;
+        display: block !important;
+        margin: 0 auto !important;
+    }
+    
+    .match-image {
+        max-width: 240px !important; /* Slightly larger than register button */
+        width: 85% !important;
+        height: auto !important;
+        display: block !important;
+        margin: 10px auto !important;
+    }
+    
+    /* Mobile Performance Optimizations */
+    .fade-carousel-track {
+        -webkit-transform: translateZ(0) !important;
+        transform: translateZ(0) !important;
+        -webkit-backface-visibility: hidden !important;
+        backface-visibility: hidden !important;
+    }
+    
+    /* Mobile Touch Improvements */
+    .fade-carousel-container {
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-x !important;
+    }
+    
+    /* Ensure consistent spacing on mobile */
+    .container {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+    
+    .row {
+        margin-left: -5px !important;
+        margin-right: -5px !important;
+    }
+    
+    .col-12, .col-md-8, .col-md-10 {
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+    }
+    
+    /* Mobile Card Optimizations */
+    .card {
+        margin-bottom: 10px !important;
+        border-radius: 10px !important;
+    }
+    
+    /* Button consistency across mobile */
+    .btn {
+        min-height: 44px !important;
+        font-size: 16px !important;
+        border-radius: 8px !important;
+        padding: 12px 16px !important;
+    }
+    
+    /* Mobile text improvements */
+    h1, h2, h3, h4, h5, h6 {
+        line-height: 1.3 !important;
+        margin-bottom: 15px !important;
+    }
+    
+    p {
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+    }
+}
+
+/* Ultra small mobile devices */
+@media (max-width: 480px) {
+    .fade-carousel-container {
+        height: 140px !important;
+    }
+    
+    .fade-carousel-item {
+        flex: 0 0 120px !important;
+        height: 110px !important;
+        margin: 0 6px !important;
+        min-width: 120px !important;
+        max-width: 120px !important;
+    }
+    
+    .register-btn-container .register-btn {
+        max-width: 200px !important; /* Even smaller for very small screens */
+        width: 75% !important;
+    }
+    
+    .match-image {
+        max-width: 220px !important;
+        width: 80% !important;
+    }
+    
+    .welcome-container img {
+        max-width: 90% !important;
+    }
+}
+
+/* Landscape mobile orientation */
+@media (max-width: 767.98px) and (orientation: landscape) {
+    .fade-carousel-container {
+        height: 120px !important;
+    }
+    
+    .fade-carousel-item {
+        height: 90px !important;
+    }
+}

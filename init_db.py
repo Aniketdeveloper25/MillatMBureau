@@ -132,6 +132,36 @@ def initialize_database():
         else:
             print("'messages' node already exists")
         
+        # Check if career_opportunities node exists
+        careers_ref = db.reference('career_opportunities')
+        careers_data = careers_ref.get()
+        
+        if careers_data is None:
+            print("Creating 'career_opportunities' node...")
+            db.reference('career_opportunities').set({})
+        else:
+            print("'career_opportunities' node already exists")
+        
+        # Check if job_applications node exists
+        applications_ref = db.reference('job_applications')
+        applications_data = applications_ref.get()
+        
+        if applications_data is None:
+            print("Creating 'job_applications' node...")
+            db.reference('job_applications').set({})
+        else:
+            print("'job_applications' node already exists")
+        
+        # Check if chat_messages node exists
+        chat_ref = db.reference('chat_messages')
+        chat_data = chat_ref.get()
+        
+        if chat_data is None:
+            print("Creating 'chat_messages' node...")
+            db.reference('chat_messages').set({})
+        else:
+            print("'chat_messages' node already exists")
+        
         print("Database structure initialization complete!")
         return True
     except Exception as e:

@@ -4,6 +4,10 @@
     ".write": "auth != null",
     "users": {
       ".indexOn": ["email"]
+    },
+    "reviews": {
+      ".read": true,
+      ".write": true
     }
   }
 } 

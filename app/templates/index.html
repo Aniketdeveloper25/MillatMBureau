@@ -3,24 +3,24 @@
 {% block extra_css %}
 <style>
   .btn-custom {
-    background-color: #33a3ac;
-    border-color: #33a3ac;
+    background-color: #3fcc6b; /* Changed to green color */
+    border-color: #2c9e50; /* Changed to green color */
     color: white;
   }
   
   .btn-custom:hover {
-    background-color: #2a8a91;
-    border-color: #2a8a91;
+    background-color: #3fd46c; /* Darker green for hover */
+    border-color: #258a44; /* Darker green for hover */
     color: white;
   }
   
   .btn-outline-custom {
-    color: #33a3ac;
-    border-color: #33a3ac;
+    color: #42d872; /* Changed to green color */
+    border-color: #2c9e50; /* Changed to green color */
   }
   
   .btn-outline-custom:hover {
-    background-color: #33a3ac;
+    background-color: #3ace69; /* Changed to green color */
     color: white;
   }
   
@@ -30,7 +30,7 @@
   
   @keyframes pulse {
     0% {
-      box-shadow: 0 0 0 0 rgba(51, 163, 172, 0.7);
+      box-shadow: 0 0 0 0 rgb(87, 200, 96);
     }
     70% {
       box-shadow: 0 0 0 10px rgba(51, 163, 172, 0);
@@ -41,40 +41,15 @@
   }
   
   .text-custom {
-    color: #33a3ac !important;
+    color: #2c9e50 !important; /* Changed to green color */
   }
   
-  /* Fancy welcome message styling */
+  /* Welcome section styling */
   .welcome-container {
-    background: linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.7));
     padding: 40px 20px 30px;
-    border-radius: 15px;
     margin-bottom: 40px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     position: relative;
     overflow: hidden;
-    backdrop-filter: blur(3px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-  }
-  
-  .welcome-container::before,
-  .welcome-container::after {
-    content: '';
-    position: absolute;
-    width: 150px;
-    height: 150px;
-    border: 2px solid rgba(51, 163, 172, 0.2);
-    border-radius: 50%;
-  }
-  
-  .welcome-container::before {
-    top: -75px;
-    left: -75px;
-  }
-  
-  .welcome-container::after {
-    bottom: -75px;
-    right: -75px;
   }
   
   .welcome-heading {
@@ -102,7 +77,7 @@
     font-weight: 700;
     font-size: 1.3em;
     letter-spacing: 2px;
-    color: #33a3ac;
+    color: #3ad65e;
     text-transform: uppercase;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
     position: relative;
@@ -116,7 +91,7 @@
     left: 0;
     width: 100%;
     height: 2px;
-    background: #33a3ac;
+    background: #3fdb66;
     transform: scaleX(0.8);
     opacity: 0.7;
   }
@@ -129,9 +104,11 @@
   
   .welcome-subtitle {
     font-style: italic;
-    color: #666;
+    color: white;
     font-size: 1.1rem;
     margin-top: 10px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+    font-weight: 500;
   }
   
   /* Register Card with Roses Background */
@@ -183,34 +160,219 @@
       box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
     }
   }
+  
+  .register-btn-container {
+    text-align: center;
+    margin: 30px 0;
+  }
+  
+  .register-btn-container .register-btn {
+    max-width: 300px; /* Medium size for register button */
+    transition: transform 0.3s ease;
+  }
+  
+  .register-btn-container .register-btn:hover {
+    transform: scale(1.05);
+  }
+  
+  .match-image {
+    max-width: 300px; /* Medium size for match image */
+    height: auto;
+    margin: 20px auto;
+  }
+  
+  .ngo-image {
+    max-width: 100%;
+    height: auto;
+    max-height: 80px; /* Medium size for NGO image */
+  }
+  
+  /* Enhanced carousel with fade and zoom effects */
+  .fade-carousel-container {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+    margin: 30px 0;
+    padding: 10px 0;
+  }
+  
+  .fade-carousel-track {
+    display: flex;
+    position: absolute;
+    left: 0;
+    width: 300%; /* Wider to ensure all images loop properly */
+    height: 100%;
+    animation: carousel-scroll 40s linear infinite;
+    padding: 0; /* Remove padding */
+  }
+  
+  .fade-carousel-track:hover {
+    animation-play-state: paused; /* Pause on hover */
+  }
+  
+  @keyframes carousel-scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-66.67%); /* Adjusted for wider track */
+    }
+  }
+  
+  .fade-carousel-item {
+    flex: 0 0 280px; /* Fixed width */
+    height: 200px;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.7s ease;
+    margin: 0 15px !important; /* Increased and forced margin for spacing */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border: 1px solid rgba(0,0,0,0.05); /* Subtle border for all items */
+    background-color: white;
+  }
+  
+  /* Ensure equal spacing for specific items that may have inconsistent spacing */
+  .fade-carousel-item:nth-child(6),
+  .fade-carousel-item:nth-child(7),
+  .fade-carousel-item:nth-child(8),
+  .fade-carousel-item:nth-child(16),
+  .fade-carousel-item:nth-child(17),
+  .fade-carousel-item:nth-child(18),
+  .fade-carousel-item:nth-child(26),
+  .fade-carousel-item:nth-child(27),
+  .fade-carousel-item:nth-child(28) {
+    margin: 0 15px !important;
+  }
+  
+  .fade-carousel-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.7s ease;
+    background-color: white;
+    padding: 5px; /* Inner padding for images */
+  }
+  
+  /* Zoom effect for centered items - more subtle */
+  .fade-carousel-track:not(:hover) .fade-carousel-item:nth-child(5),
+  .fade-carousel-track:not(:hover) .fade-carousel-item:nth-child(6),
+  .fade-carousel-track:not(:hover) .fade-carousel-item:nth-child(7) {
+    transform: scale(1.08); /* Reduced zoom for more subtle effect */
+    z-index: 2;
+  }
+  
+  /* Create fade effect on sides - more subtle */
+  .fade-carousel-container::before,
+  .fade-carousel-container::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: 150px;
+    height: 100%;
+    z-index: 3;
+    pointer-events: none;
+  }
+  
+  .fade-carousel-container::before {
+    left: 0;
+    background: linear-gradient(to right, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%); /* Lower opacity */
+  }
+  
+  .fade-carousel-container::after {
+    right: 0;
+    background: linear-gradient(to left, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%); /* Lower opacity */
+  }
+  
+  /* Mobile-specific styles */
+  @media (max-width: 767.98px) {
+    /* Register button mobile adjustments - SMALLER SIZE */
+    .register-btn-container {
+      margin: 15px 0;
+      text-align: center;
+    }
+    
+    .register-btn-container .register-btn {
+      max-width: 180px !important; /* EVEN SMALLER SIZE FOR MOBILE */
+      height: auto !important;
+      width: 70% !important; /* Further reduced width */
+    }
+    
+    .match-image {
+      max-width: 200px !important; /* Adjusted to match smaller register button */
+      height: auto !important;
+      width: 75% !important; /* Responsive width */
+    }
+  }
 </style>
 <!-- Add Google Font for fancy text -->
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
 {% endblock %}
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-3"> <!-- Reduced top margin to move image closer to navbar -->
   <div class="row justify-content-center">
-    <div class="col-md-10 text-center welcome-container">
-      <h1 class="display-4 fade-in welcome-heading">Welcome to <span class="millat-text">Millat</span> <span class="bureau-text">Marriage Bureau</span></h1>
-      <p class="lead fade-in welcome-subtitle">The trusted platform for Muslim matrimony services</p>
-      
-      <!-- Social Media Links -->
-      
+    <div class="col-md-10 text-center welcome-container" style="padding-top: 0; margin-top: 0;"> <!-- Removed top padding and margin -->
+      <div class="text-center">
+        <img src="{{ url_for('static', filename='img/backgrounds/111.png') }}" alt="Muslim Nikah" class="img-fluid fade-in" style="max-width: 100%; margin: 0 auto; background-color: transparent;">
+      </div>
     </div>
   </div>
 
   {% if not current_user.is_authenticated %}
-  <div class="row justify-content-center mb-5">
+  <!-- Enhanced Carousel with Fade and Zoom Effects -->
+  <div class="row justify-content-center mb-0">
+    <div class="col-12">
+      <div class="fade-carousel-container">
+        <div class="fade-carousel-track">
+          <!-- First set of images -->
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/2.png') }}" alt="Image 2"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/3.png') }}" alt="Image 3"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/4.png') }}" alt="Image 4"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/5.png') }}" alt="Image 5"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/6.png') }}" alt="Image 6"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/7.png') }}" alt="Image 7"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/8.png') }}" alt="Image 8"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/9.png') }}" alt="Image 9"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/10.png') }}" alt="Image 10"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/11.png') }}" alt="Image 11"></div>
+          
+          <!-- Second set for seamless looping -->
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/2.png') }}" alt="Image 2"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/3.png') }}" alt="Image 3"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/4.png') }}" alt="Image 4"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/5.png') }}" alt="Image 5"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/6.png') }}" alt="Image 6"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/7.png') }}" alt="Image 7"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/8.png') }}" alt="Image 8"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/9.png') }}" alt="Image 9"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/10.png') }}" alt="Image 10"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/11.png') }}" alt="Image 11"></div>
+          
+          <!-- Third set to ensure complete looping -->
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/2.png') }}" alt="Image 2"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/3.png') }}" alt="Image 3"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/4.png') }}" alt="Image 4"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/5.png') }}" alt="Image 5"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/6.png') }}" alt="Image 6"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/7.png') }}" alt="Image 7"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/8.png') }}" alt="Image 8"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/9.png') }}" alt="Image 9"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/10.png') }}" alt="Image 10"></div>
+          <div class="fade-carousel-item"><img src="{{ url_for('static', filename='img/backgrounds/11.png') }}" alt="Image 11"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row justify-content-center mb-0">
     <div class="col-md-8">
-      <div class="card shadow slide-in register-card">
-        <div class="card-body text-center p-5">
-          <h2 class="mb-4 text-white">Register For Free</h2>
-          <p class="mb-4 text-white">Millat Marriage Bureau aims to go beyond matchmaking by creating a platform that supports individuals and families through family and pre-marital counseling, emphasizing values, ethics, honesty, trust, and commitment. It guides couples toward a happy, peaceful, and financially stable future rooted in mutual respect and Islamic principles, fostering strong marriages, families, and communities for success in this life and the Hereafter.</p>
-          <div class="d-grid gap-2 d-md-block">
-            <a href="{{ url_for('user.register') }}" class="btn btn-light btn-lg px-4 me-md-2 pulse-animation">Register Now</a>
-            <a href="{{ url_for('user.login') }}" class="btn btn-outline-light btn-lg px-4">Login</a>
-          </div>
-          <p class="mt-3 small text-white">You're currently viewing our public page. Register or login to get call from your match!!!</p>
+      <div class="register-btn-container">
+        <a href="{{ url_for('user.register') }}">
+          <img src="{{ url_for('static', filename='img/backgrounds/14.png') }}" alt="Register" class="img-fluid register-btn">
+        </a>
+        <div class="text-center">
+          <img src="{{ url_for('static', filename='img/backgrounds/15.png') }}" alt="We Search Your Match" class="img-fluid match-image mt-3">
         </div>
       </div>
     </div>
@@ -264,9 +426,9 @@
       <h2 class="text-center mb-4 fade-in">What Our Users Say</h2>
       
       <!-- Review Cards -->
-      <div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
-        {% for review in reviews.values() %}
-        <div class="col fade-in">
+      <div class="row row-cols-1 row-cols-md-3 g-4 mb-5" id="reviews-container">
+        {% for review_id, review in reviews.items() %}
+        <div class="col fade-in review-card" id="review-{{ review_id }}">
           <div class="card h-100 shadow-sm match-card">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center mb-3">
@@ -323,5 +485,52 @@
       {% endif %}
     </div>
   </div>
+  
+  <!-- NGO Association Image -->
+  <!--<div class="row justify-content-center mb-5">
+    <div class="col-md-10 text-center">
+      <img src="{{ url_for('static', filename='img/backgrounds/16.png') }}" alt="Serving Under The Patronage Of Vidarbha Welfare Association (Mumbai) NGO" class="img-fluid ngo-image">
+    </div>
+  </div>-->
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Connect to Socket.IO server
+    const socket = io();
+    
+    // Handle connection event
+    socket.on('connect', function() {
+      console.log('Connected to Socket.IO server');
+      // Join the public room to receive updates
+      socket.emit('join', {room: 'public'});
+    });
+    
+    // Handle review_deleted event
+    socket.on('review_deleted', function(data) {
+      console.log('Review deleted:', data);
+      const reviewId = data.review_id;
+      const reviewElement = document.getElementById('review-' + reviewId);
+      
+      if (reviewElement) {
+        // Add fade-out animation
+        reviewElement.style.transition = 'opacity 0.5s ease';
+        reviewElement.style.opacity = '0';
+        
+        // Remove the element after animation completes
+        setTimeout(function() {
+          reviewElement.remove();
+        }, 500);
+      }
+    });
+    
+    // Handle disconnection
+    socket.on('disconnect', function() {
+      console.log('Disconnected from Socket.IO server');
+    });
+  });
+</script>
 {% endblock %}

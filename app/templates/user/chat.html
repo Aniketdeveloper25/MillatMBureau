@@ -1,0 +1,326 @@
+{% extends 'base.html' %}
+{% block title %}Chat with Admin{% endblock %}
+{% block extra_css %}
+<style>
+  .btn-custom {
+    background-color: #33a3ac;
+    border-color: #33a3ac;
+    color: white;
+  }
+  
+  .btn-custom:hover {
+    background-color: #2a8a91;
+    border-color: #2a8a91;
+    color: white;
+  }
+  
+  .btn-outline-custom {
+    color: #33a3ac;
+    border-color: #33a3ac;
+  }
+  
+  .btn-outline-custom:hover {
+    background-color: #33a3ac;
+    color: white;
+  }
+
+  .chat-container {
+    height: 500px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    margin-bottom: 1rem;
+  }
+
+  .chat-message {
+    margin-bottom: 15px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    max-width: 80%;
+    word-wrap: break-word;
+  }
+
+  .user-message {
+    background-color: #33a3ac;
+    color: white;
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .admin-message {
+    background-color: #e9ecef;
+    color: #333;
+    margin-right: auto;
+    text-align: left;
+  }
+
+  .message-content {
+    margin-bottom: 5px;
+  }
+
+  .message-timestamp {
+    font-size: 0.8rem;
+    opacity: 0.7;
+  }
+
+  .chat-input-container {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 1rem 0;
+    border-top: 1px solid #dee2e6;
+  }
+
+  .send-btn {
+    background-color: #33a3ac;
+    border-color: #33a3ac;
+    color: white;
+    min-width: 80px;
+  }
+
+  .send-btn:hover:not(:disabled) {
+    background-color: #2a8a91;
+    border-color: #2a8a91;
+  }
+
+  .send-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .chat-header {
+    background: linear-gradient(135deg, #33a3ac 0%, #2a8a91 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .empty-chat {
+    text-align: center;
+    color: #6c757d;
+    padding: 3rem 1rem;
+  }
+
+  .empty-chat i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <!-- Header -->
+      <div class="chat-header">
+        <h2 class="mb-0"><i class="fas fa-comments me-2"></i>Chat Support</h2>
+        <p class="mb-0 mt-2">Send a message to our Support Expert</p>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} slide-in">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- Chat Messages Container -->
+      <div class="card shadow-sm">
+        <div class="card-body p-0">
+          <div class="chat-container" id="messageContainer">
+            {% if chat_messages %}
+              {% for msg_id, msg in chat_messages.items()|sort(attribute='1.timestamp') %}
+                <div class="chat-message {% if msg.sender_id == current_user.id %}user-message{% else %}admin-message{% endif %}">
+                  <div class="message-content">{{ msg.message }}</div>
+                  <small class="message-timestamp">{{ msg.timestamp }}</small>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="empty-chat">
+                <i class="fas fa-comment-dots"></i>
+                <h5>No messages yet</h5>
+                <p>Start a conversation with our admin team by typing a message below.</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Message Input -->
+      <div class="chat-input-container">
+        <form id="messageForm">
+          <div class="input-group">
+            <input 
+              type="text" 
+              class="form-control form-control-lg" 
+              id="messageInput" 
+              placeholder="Type your message here..." 
+              required
+              maxlength="1000"
+            >
+            <button class="btn send-btn" type="submit" id="sendButton">
+              <span id="sendButtonText">
+                <i class="fas fa-paper-plane me-1"></i>Send
+              </span>
+              <span id="sendButtonLoading" class="d-none">
+                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                Sending...
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Back to Dashboard Link -->
+      <div class="text-center mt-3">
+        <a href="{{ url_for('user.dashboard') }}" class="btn btn-outline-custom">
+          <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const messageContainer = document.getElementById('messageContainer');
+const messageForm = document.getElementById('messageForm');
+const messageInput = document.getElementById('messageInput');
+const sendButton = document.getElementById('sendButton');
+const sendButtonText = document.getElementById('sendButtonText');
+const sendButtonLoading = document.getElementById('sendButtonLoading');
+
+// Scroll to bottom of chat
+function scrollToBottom() {
+    messageContainer.scrollTop = messageContainer.scrollHeight;
+}
+
+// Initial scroll
+scrollToBottom();
+
+// Show loading state
+function showLoading() {
+    sendButton.disabled = true;
+    // Completely replace button innerHTML to avoid any conflicts
+    sendButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Sending...';
+}
+
+// Hide loading state
+function hideLoading() {
+    sendButton.disabled = false;
+    // Restore original button content
+    sendButton.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Send';
+}
+
+// Add message to chat UI
+function addMessageToChat(message, isUser = true) {
+    // Remove empty chat message if it exists
+    const emptyChat = messageContainer.querySelector('.empty-chat');
+    if (emptyChat) {
+        emptyChat.remove();
+    }
+
+    const timestamp = new Date().toLocaleString();
+    const messageClass = isUser ? 'user-message' : 'admin-message';
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${messageClass}`;
+    messageDiv.innerHTML = `
+        <div class="message-content">${escapeHtml(message)}</div>
+        <small class="message-timestamp">${timestamp}</small>
+    `;
+    
+    messageContainer.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+// Handle message submission
+messageForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const message = messageInput.value.trim();
+    if (!message) return;
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('{{ url_for("user.send_admin_message") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `message=${encodeURIComponent(message)}`
+        });
+        
+        // Check if response is OK before trying to parse JSON
+        if (!response.ok) {
+            if (response.headers.get('content-type')?.includes('application/json')) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Server error');
+            } else {
+                throw new Error(`Server error: ${response.status} ${response.statusText}`);
+            }
+        }
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            // Add message to chat UI
+            addMessageToChat(message, true);
+            
+            // Clear input
+            messageInput.value = '';
+            
+            // Focus back to input for next message
+            messageInput.focus();
+        } else {
+            alert(`Failed to send message: ${result.message}`);
+        }
+    } catch (error) {
+        alert(`Error sending message: ${error.message}`);
+    } finally {
+        // Always hide loading state and restore focus
+        hideLoading();
+        messageInput.focus();
+    }
+});
+
+// Auto-focus on message input when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    messageInput.focus();
+});
+
+// Handle Enter key (optional: Shift+Enter for new line)
+messageInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        messageForm.dispatchEvent(new Event('submit'));
+    }
+});
+</script>
+{% endblock %}

@@ -1,7 +1,271 @@
 {% extends 'base.html' %}
-{% block title %}Admin Dashboard{% endblock %}
+{% block title %}Admin Dashboard{% endblock title %}
 {% block extra_css %}
 <style>
+.chat-container {
+    height: 400px;
+    overflow-y: auto;
+}
+.chat-message {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 10px;
+}
+.admin-message {
+    background-color: #e3f2fd;
+    margin-left: 20%;
+}
+.user-message {
+    background-color: #f5f5f5;
+    margin-right: 20%;
+}
+
+/* Notification indicators */
+.notification-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 12px;
+    height: 12px;
+    background-color: #dc3545;
+    border-radius: 50%;
+    border: 2px solid white;
+    animation: pulse-notification 2s infinite;
+    z-index: 10;
+}
+
+.notification-dot.hidden {
+    display: none;
+}
+
+@keyframes pulse-notification {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(220, 53, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+}
+
+.user-list-item {
+    position: relative;
+    transition: background-color 0.3s ease;
+}
+
+.user-list-item:hover {
+    background-color: rgba(51, 163, 172, 0.1) !important;
+}
+
+.user-list-item.has-unread {
+    background-color: rgba(220, 53, 69, 0.05);
+    border-left: 3px solid #dc3545;
+}
+
+.notification-count {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+    min-width: 18px;
+    text-align: center;
+    line-height: 14px;
+    animation: bounce-in 0.3s ease;
+    z-index: 10;
+}
+
+.notification-count.hidden {
+    display: none;
+}
+
+@keyframes bounce-in {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Animated icon for new messages */
+.new-message-icon {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    color: #dc3545;
+    font-size: 12px;
+    animation: blink 1s infinite;
+    z-index: 5;
+}
+
+.new-message-icon.hidden {
+    display: none;
+}
+
+@keyframes blink {
+    0%, 50% {
+        opacity: 1;
+    }
+    51%, 100% {
+        opacity: 0;
+    }
+}
+
+/* Animated bell icon for new messages */
+.notification-bell {
+    position: absolute;
+    top: 10px;
+    right: 35px;
+    color: #dc3545;
+    font-size: 16px;
+    animation: bell-ring 2s infinite;
+    z-index: 15;
+}
+
+.notification-bell.hidden {
+    display: none;
+}
+
+@keyframes bell-ring {
+    0%, 10%, 20%, 30%, 40% {
+        transform: rotate(0deg);
+    }
+    5%, 15%, 25%, 35% {
+        transform: rotate(15deg);
+    }
+    7.5%, 17.5%, 27.5%, 37.5% {
+        transform: rotate(-15deg);
+    }
+    50%, 100% {
+        transform: rotate(0deg);
+    }
+}
+</style>
+{% endblock extra_css %}
+{% block content %}
+<style>
+  /* Override background for admin panel */
+  body::before {
+    background-color: rgba(245, 245, 245, 0.95) !important;
+  }
+  
+  #hero-video {
+    display: none !important;
+  }
+  
+  /* AGGRESSIVE MODAL FIX - Override everything */
+  .modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 9999 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: auto !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    display: none !important;
+  }
+  
+  .modal.show {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  .modal-dialog {
+    z-index: 10000 !important;
+    position: relative !important;
+    margin: auto !important;
+  }
+  
+  .modal-content {
+    z-index: 10001 !important;
+    position: relative !important;
+    background-color: white !important;
+    border: 1px solid rgba(0, 0, 0, 0.2) !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3) !important;
+  }
+  
+  .modal-header {
+    z-index: 10002 !important;
+    position: relative !important;
+    padding: 1rem !important;
+    border-bottom: 1px solid #dee2e6 !important;
+  }
+  
+  .modal-body {
+    z-index: 10002 !important;
+    position: relative !important;
+    padding: 1rem !important;
+  }
+  
+  .modal-footer {
+    z-index: 10002 !important;
+    position: relative !important;
+    padding: 1rem !important;
+    border-top: 1px solid #dee2e6 !important;
+    display: flex !important;
+    gap: 0.5rem !important;
+    justify-content: flex-end !important;
+  }
+  
+  /* Force all interactive elements to be clickable */
+  .modal * {
+    pointer-events: auto !important;
+  }
+  
+  .modal .btn {
+    z-index: 10003 !important;
+    position: relative !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    display: inline-block !important;
+  }
+  
+  .modal .btn-close {
+    z-index: 10004 !important;
+    position: relative !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    background: none !important;
+    border: none !important;
+    font-size: 1.2rem !important;
+    opacity: 0.5 !important;
+  }
+  
+  .modal .btn-close:hover {
+    opacity: 1 !important;
+  }
+  
+  .modal input, .modal select, .modal textarea {
+    z-index: 10003 !important;
+    position: relative !important;
+    pointer-events: auto !important;
+  }
+  
+  /* Hide any Bootstrap backdrop */
+  .modal-backdrop {
+    display: none !important;
+  }
+  
+  /* Ensure body doesn't scroll when modal is open */
+  .modal-open {
+    overflow: hidden !important;
+    padding-right: 0 !important;
+  }
+  
   .custom-primary {
     background-color: #33a3ac !important;
     border-color: #33a3ac !important;
@@ -79,8 +343,116 @@
     }
   }
 </style>
-{% endblock %}
-{% block content %}
+
+{% block extra_js %}
+<script>
+function downloadUserData() {
+    window.location.href = "{{ url_for('admin.download_xls') }}";
+}
+
+// Career Management
+function viewCareerDetails(careerId) {
+    const career = {{ career_opportunities|tojson }}[careerId];
+    if (!career) return;
+    
+    const modal = new bootstrap.Modal(document.getElementById('careerDetailsModal'));
+    document.getElementById('careerDetailsTitle').textContent = career.title;
+    document.getElementById('careerDetailsContent').innerHTML = `
+        <p><strong>Location:</strong> ${career.location}</p>
+        <p><strong>Job Type:</strong> ${career.job_type}</p>
+        <p><strong>Salary:</strong> ${career.salary}</p>
+        <p><strong>Description:</strong></p>
+        <p>${career.description}</p>
+        <p><strong>Requirements:</strong></p>
+        <p>${career.requirements}</p>
+        <p><strong>Deadline:</strong> ${career.deadline}</p>
+    `;
+    modal.show();
+}
+
+// Chat Functionality - variables will be initialized inside DOMContentLoaded
+let currentChatUser = null;
+let messageContainer, messageForm, chatArea, noChatSelected;
+
+// Helper function to escape HTML and prevent XSS
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+function loadUserChat(userId, userName) {
+    if (!messageContainer || !chatArea || !noChatSelected) {
+        console.error('Chat elements not initialized');
+        return;
+    }
+    
+    currentChatUser = userId;
+    const chatUserNameEl = document.getElementById('chatUserName');
+    if (chatUserNameEl) {
+        chatUserNameEl.textContent = userName;
+    }
+    
+    // Clear notifications for this user when opening their chat
+    if (window.markMessagesAsRead && typeof window.markMessagesAsRead === 'function') {
+        window.markMessagesAsRead(userId);
+    }
+    
+    chatArea.classList.remove('d-none');
+    messageForm.classList.remove('d-none');
+    noChatSelected.classList.add('d-none');
+    
+    // Load chat messages from admin_chat (both admin and user messages)
+    const messages = {{ chat_messages|tojson }};
+    messageContainer.innerHTML = '';
+    
+    console.log('Loading chat for user:', userId, userName);
+    console.log('Current admin user ID:', '{{ current_user.id }}');
+    console.log('Total messages in database:', Object.keys(messages).length);
+    
+    // Convert messages object to array and filter
+    const messageArray = Object.values(messages).filter(msg => {
+        const isConversation = (msg.sender_id === userId && msg.receiver_id === '{{ current_user.id }}') ||
+                              (msg.sender_id === '{{ current_user.id }}' && msg.receiver_id === userId);
+        console.log('Message:', msg.message, 'From:', msg.sender_id, 'To:', msg.receiver_id, 'Include:', isConversation);
+        return isConversation;
+    });
+    
+    console.log('Filtered messages for conversation:', messageArray.length);
+    
+    messageArray
+        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+        .forEach(msg => {
+            const isAdmin = msg.sender_id === '{{ current_user.id }}';
+            const messageHtml = `
+                <div class="chat-message ${isAdmin ? 'admin-message' : 'user-message'}">
+                    <div class="message-content">${escapeHtml(msg.message)}</div>
+                    <small class="text-muted">${new Date(msg.timestamp).toLocaleString()}</small>
+                </div>
+            `;
+            messageContainer.innerHTML += messageHtml;
+        });
+    
+    // If no messages found, show a placeholder
+    if (messageArray.length === 0) {
+        messageContainer.innerHTML = `
+            <div class="text-center text-muted p-3">
+                <i class="fas fa-comment-dots fa-2x mb-2"></i>
+                <p>No messages yet with ${userName}.<br>Start the conversation!</p>
+            </div>
+        `;
+    }
+    
+    messageContainer.scrollTop = messageContainer.scrollHeight;
+}
+</script>
+{% endblock extra_js %}
+
 <div class="container-fluid mt-4">
   <div class="row">
     <!-- Sidebar -->
@@ -90,6 +462,9 @@
         <button class="list-group-item list-group-item-action active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard">Dashboard</button>
         <button class="list-group-item list-group-item-action" id="users-tab" data-bs-toggle="tab" data-bs-target="#users">Users</button>
         <button class="list-group-item list-group-item-action" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches">Matches</button>
+        <button class="list-group-item list-group-item-action" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews">Reviews</button>
+
+        <button class="list-group-item list-group-item-action" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat">Chat</button>
         <button class="list-group-item list-group-item-action" id="create-match-tab" data-bs-toggle="tab" data-bs-target="#create-match">Create Match</button>
         <a href="{{ url_for('user.logout') }}" class="list-group-item list-group-item-action text-danger mt-5">Logout</a>
       </div>
@@ -223,16 +598,56 @@
           <div class="d-flex justify-content-between align-items-center mb-4">
             <h3>User Management</h3>
             <div>
+              <button type="button" class="btn btn-success me-2" id="openImportModalBtn">
+                <i class="fas fa-file-import"></i> Import Users
+              </button>
               <a href="{{ url_for('admin.download_xls') }}" id="downloadXlsBtn" class="btn btn-custom">Download XLS</a>
+            </div>
+          </div>
+          
+          <!-- Import Users Modal -->
+          <div class="modal" id="importUsersModal" tabindex="-1" aria-labelledby="importUsersModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="importUsersModalLabel">Import Users from Excel</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('admin.import_users') }}" method="POST" enctype="multipart/form-data" id="importUsersForm">
+                  <div class="modal-body">
+                    <div class="alert alert-info">
+                      <p><strong>Required columns:</strong> Full Name, Gender</p>
+                      <p><strong>Optional columns:</strong> Age, Location, Phone, Education Level, Field of Study, Institution, Job Title, Company, Experience (Years)</p>
+                      <p><strong>Preference columns:</strong> Pref Age Min, Pref Age Max, Pref Location, Pref Education Level, Pref Education Field, Pref Job Title, Min Experience, Pref Qualities</p>
+                    </div>
+                    <div class="mb-3">
+                      <label for="excelFile" class="form-label">Select Excel File (.xlsx, .xls)</label>
+                      <input class="form-control" type="file" id="excelFile" name="excel_file" accept=".xlsx,.xls" required>
+                    </div>
+                    <div class="mb-3">
+                      <a href="{{ url_for('admin.download_template') }}" class="btn btn-outline-info btn-sm" id="downloadTemplateBtn">
+                        <i class="fas fa-download"></i> Download Sample Template
+                      </a>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelImportBtn">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="submitImportBtn">Import Users</button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
           
               <!-- Filter Controls -->
               <div class="row mb-3">
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <input type="text" id="userSearchInput" class="form-control" placeholder="Search by name...">
                 </div>
                 <div class="col-md-3">
+                  <input type="text" id="locationSearchInput" class="form-control" placeholder="Search by city/state/country...">
+                </div>
+                <div class="col-md-2">
                   <select id="jobFilter" class="form-select">
                     <option value="">Filter by Job</option>
                     {% for job in job_titles %}
@@ -240,7 +655,7 @@
                     {% endfor %}
                   </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                   <select id="educationFilter" class="form-select">
                     <option value="">Filter by Education</option>
                     {% for level in education_levels %}
@@ -249,7 +664,7 @@
                   </select>
                 </div>
                 <div class="col-md-2">
-              <button id="resetFilters" class="btn btn-outline-custom w-100">Reset</button>
+                  <button id="resetFilters" class="btn btn-outline-custom w-100">Reset</button>
                 </div>
               </div>
               
@@ -413,12 +828,340 @@
                       </select>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Careers Tab -->
+        <div class="tab-pane fade" id="careers">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3>Career Opportunities Management</h3>
+            <button type="button" class="btn btn-custom" id="addCareerBtn" data-bs-toggle="modal" data-bs-target="#addCareerModal">
+              <i class="fas fa-plus"></i> Add New Position
+            </button>
+          </div>
+          
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="careersTable">
+              <thead class="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>Job Title</th>
+                  <th>Type</th>
+                  <th>Location</th>
+                  <th>Salary</th>
+                  <th>Applications</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if career_opportunities %}
+                  {% for career_id, career in career_opportunities.items() %}
+                  <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ career.title }}</td>
+                    <td><span class="badge badge-custom">{{ career.job_type|title }}</span></td>
+                    <td>{{ career.location }}</td>
+                    <td>{{ career.salary if career.salary else 'Not specified' }}</td>
+                    <td>
+                      <span class="badge badge-{{ 'accepted' if (job_applications.values() | selectattr('career_id', 'equalto', career_id) | list | length) > 0 else 'incomplete' }}">
+                        {{ job_applications.values() | selectattr('career_id', 'equalto', career_id) | list | length }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge badge-{{ 'complete' if career.status == 'active' else 'incomplete' }}">
+                        {{ career.status|title }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="btn-group">
+                        <a href="{{ url_for('admin.view_career_applications', career_id=career_id) }}" class="btn btn-sm btn-outline-primary">View Applications</a>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="editCareer('{{ career_id }}')">Edit</button>
+                        <form method="POST" action="{{ url_for('admin.delete_career_opportunity', career_id=career_id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this career opportunity?')">
+                          <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+          
+          {% if not career_opportunities %}
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i> No career opportunities found. <a href="#" id="addFirstCareer">Add the first one!</a>
+          </div>
+          {% endif %}
+        </div>
+        
+        <!-- Chat Tab -->
+        <div class="tab-pane fade" id="chat">
+          <h3 class="mb-4">User Chat</h3>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="mb-0">Users</h5>
+                </div>
+                <div class="card-body p-0">
+                  <div class="list-group list-group-flush">
+                    {% for uid, user in users.items() %}
+                      {% if not user.is_admin %}
+                        <button class="list-group-item list-group-item-action user-list-item" 
+                                data-user-id="{{ uid }}" 
+                                onclick="loadUserChat('{{ uid }}', '{{ user.fullname }}')">
+                          <!-- Animated notification indicators -->
+                          <div class="notification-dot hidden" id="notification-dot-{{ uid }}"></div>
+                          <div class="notification-count hidden" id="notification-count-{{ uid }}">1</div>
+                          <div class="new-message-icon hidden" id="new-message-icon-{{ uid }}">
+                            <i class="fas fa-circle"></i>
+                          </div>
+                          <div class="notification-bell hidden" id="notification-bell-{{ uid }}">
+                            <i class="fas fa-bell"></i>
+                          </div>
+                          
+                          <div class="d-flex justify-content-between align-items-center w-100">
+                            <span>{{ user.fullname }}</span>
+                            <span class="badge badge-custom">{{ user.gender|capitalize if user.gender else 'N/A' }}</span>
+                          </div>
+                        </button>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="mb-0" id="chatUserName">Select a user</h5>
+                </div>
+                <div class="card-body">
+                  <div id="noChatSelected" class="text-center p-5">
+                    <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                    <p class="lead">Select a user to start chatting</p>
+                  </div>
+                  <div id="chatArea" class="d-none">
+                    <div id="messageContainer" class="chat-container mb-3"></div>
+                    <form id="messageForm" class="d-none">
+                      <div class="input-group">
+                        <input type="text" id="messageInput" class="form-control" placeholder="Type your message..." required>
+                        <button type="submit" class="btn btn-custom">Send</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          </form>
+        </div>
+        
+        <!-- Reviews Tab -->
+        <div class="tab-pane fade" id="reviews">
+          <h3 class="mb-4">User Reviews</h3>
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i> Manage user reviews. Deleted reviews will be immediately removed from the website.
+          </div>
+          
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="reviewsTable">
+              <thead class="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>User Name</th>
+                  <th>Rating</th>
+                  <th>Comment</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for review_id, review in reviews.items() %}
+                <tr id="review-row-{{ review_id }}">
+                  <td>{{ loop.index }}</td>
+                  <td>{{ review.user_name }}</td>
+                  <td>
+                    <div class="text-custom">
+                      {% for i in range(review.rating) %}
+                      <i class="fas fa-star"></i>
+                      {% endfor %}
+                    </div>
+                  </td>
+                  <td>{{ review.comment }}</td>
+                  <td>{{ review.date }}</td>
+                  <td>
+                    <form action="{{ url_for('admin.delete_review', review_id=review_id) }}" method="POST" class="delete-review-form" data-review-id="{{ review_id }}">
+                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this review?')">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          
+          {% if not reviews %}
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i> No reviews found.
+          </div>
+          {% endif %}
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Career Modal -->
+<div class="modal fade" id="addCareerModal" tabindex="-1" aria-labelledby="addCareerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addCareerModalLabel">Add New Career Opportunity</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="{{ url_for('admin.add_career_opportunity') }}" method="POST" id="addCareerForm">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="title" class="form-label">Job Title *</label>
+              <input type="text" class="form-control" id="title" name="title" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="location" class="form-label">Location</label>
+              <input type="text" class="form-control" id="location" name="location" placeholder="e.g., New York, Remote">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="job_type" class="form-label">Job Type</label>
+              <select class="form-select" id="job_type" name="job_type">
+                <option value="full-time">Full-time</option>
+                <option value="part-time">Part-time</option>
+                <option value="contract">Contract</option>
+                <option value="internship">Internship</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="salary" class="form-label">Salary</label>
+              <input type="text" class="form-control" id="salary" name="salary" placeholder="e.g., $50,000 - $70,000">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="description" class="form-label">Job Description</label>
+            <textarea class="form-control" id="description" name="description" rows="4" placeholder="Describe the job responsibilities and what the role entails..."></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="requirements" class="form-label">Requirements</label>
+            <textarea class="form-control" id="requirements" name="requirements" rows="3" placeholder="List the required qualifications, skills, and experience..."></textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="deadline" class="form-label">Application Deadline</label>
+              <input type="date" class="form-control" id="deadline" name="deadline">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="status" class="form-label">Status</label>
+              <select class="form-select" id="status" name="status">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-custom">Add Position</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Career Details Modal -->
+<div class="modal fade" id="careerDetailsModal" tabindex="-1" aria-labelledby="careerDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="careerDetailsTitle">Career Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="careerDetailsContent"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Career Modal -->
+<div class="modal fade" id="editCareerModal" tabindex="-1" aria-labelledby="editCareerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editCareerModalLabel">Edit Career Opportunity</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="" method="POST" id="editCareerForm">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="edit_title" class="form-label">Job Title *</label>
+              <input type="text" class="form-control" id="edit_title" name="title" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="edit_location" class="form-label">Location</label>
+              <input type="text" class="form-control" id="edit_location" name="location">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="edit_job_type" class="form-label">Job Type</label>
+              <select class="form-select" id="edit_job_type" name="job_type">
+                <option value="full-time">Full-time</option>
+                <option value="part-time">Part-time</option>
+                <option value="contract">Contract</option>
+                <option value="internship">Internship</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="edit_salary" class="form-label">Salary</label>
+              <input type="text" class="form-control" id="edit_salary" name="salary">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="edit_description" class="form-label">Job Description</label>
+            <textarea class="form-control" id="edit_description" name="description" rows="4"></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="edit_requirements" class="form-label">Requirements</label>
+            <textarea class="form-control" id="edit_requirements" name="requirements" rows="3"></textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="edit_deadline" class="form-label">Application Deadline</label>
+                <input type="date" class="form-control" id="edit_deadline" name="deadline">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="edit_status" class="form-label">Status</label>
+                <select class="form-select" id="edit_status" name="status">
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-custom">Update Position</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -431,6 +1174,19 @@
       return;
     }
     
+    // Initialize chat elements - DO THIS FIRST
+    messageContainer = document.getElementById('messageContainer');
+    messageForm = document.getElementById('messageForm');
+    chatArea = document.getElementById('chatArea');
+    noChatSelected = document.getElementById('noChatSelected');
+    
+    console.log('Chat elements initialized:', {
+      messageContainer: !!messageContainer,
+      messageForm: !!messageForm, 
+      chatArea: !!chatArea,
+      noChatSelected: !!noChatSelected
+    });
+    
     // Initialize Bootstrap tabs
     const tabElements = document.querySelectorAll('[data-bs-toggle="tab"]');
     tabElements.forEach(tabElement => {
@@ -441,8 +1197,165 @@
       }
     });
     
+    // Fix modal issue
+    const importUsersModal = document.getElementById('importUsersModal');
+    const importForm = document.getElementById('importUsersForm');
+    const openImportModalBtn = document.getElementById('openImportModalBtn');
+    
+    if (importUsersModal) {
+      // Create modal instance with specific options
+      const modal = new bootstrap.Modal(importUsersModal, {
+        backdrop: false,
+        keyboard: true
+      });
+      
+      // Handle modal open with custom button
+      if (openImportModalBtn) {
+        openImportModalBtn.addEventListener('click', function() {
+          // Remove any existing backdrops
+          const existingBackdrops = document.querySelectorAll('.modal-backdrop');
+          existingBackdrops.forEach(backdrop => backdrop.remove());
+          
+          // Show modal
+          modal.show();
+        });
+      }
+      
+      // Handle close button
+      const closeBtn = importUsersModal.querySelector('.btn-close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+          modal.hide();
+          // Remove any existing backdrops
+          const existingBackdrops = document.querySelectorAll('.modal-backdrop');
+          existingBackdrops.forEach(backdrop => backdrop.remove());
+          document.body.classList.remove('modal-open');
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+        });
+      }
+      
+      // Handle cancel button
+      const cancelBtn = document.getElementById('cancelImportBtn');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+          modal.hide();
+          // Remove any existing backdrops
+          const existingBackdrops = document.querySelectorAll('.modal-backdrop');
+          existingBackdrops.forEach(backdrop => backdrop.remove());
+          document.body.classList.remove('modal-open');
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+        });
+      }
+      
+      // Add loading state to prevent UI freeze
+      if (importForm) {
+        importForm.addEventListener('submit', function() {
+          const submitBtn = document.getElementById('submitImportBtn');
+          if (submitBtn) {
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Importing...';
+            submitBtn.disabled = true;
+          }
+        });
+      }
+    }
+    
+    // Fix career modal issue
+    const addCareerModal = document.getElementById('addCareerModal');
+    const editCareerModal = document.getElementById('editCareerModal');
+    const addCareerForm = document.getElementById('addCareerForm');
+    const addCareerBtn = document.getElementById('addCareerBtn');
+    
+    // Handle Add Career Modal
+    if (addCareerModal) {
+      // Create modal instance with specific options
+      const careerModal = new bootstrap.Modal(addCareerModal, {
+        backdrop: false,
+        keyboard: true
+      });
+      
+      // Handle modal open with custom button
+      if (addCareerBtn) {
+        addCareerBtn.addEventListener('click', function() {
+          // Remove any existing backdrops
+          const existingBackdrops = document.querySelectorAll('.modal-backdrop');
+          existingBackdrops.forEach(backdrop => backdrop.remove());
+          
+          // Show modal
+          careerModal.show();
+        });
+      }
+      
+      // Handle close button
+      const closeBtn = addCareerModal.querySelector('.btn-close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+          careerModal.hide();
+          // Remove any existing backdrops
+          const existingBackdrops = document.querySelectorAll('.modal-backdrop');
+          existingBackdrops.forEach(backdrop => backdrop.remove());
+          document.body.classList.remove('modal-open');
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+        });
+      }
+      
+      // Handle cancel button
+      const cancelBtn = addCareerModal.querySelector('button[data-bs-dismiss="modal"]');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+          careerModal.hide();
+          // Remove any existing backdrops
+          const existingBackdrops = document.querySelectorAll('.modal-backdrop');
+          existingBackdrops.forEach(backdrop => backdrop.remove());
+          document.body.classList.remove('modal-open');
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+        });
+      }
+    }
+    
+    // Handle Edit Career Modal
+    if (editCareerModal) {
+      // Handle close button
+      const editCloseBtn = editCareerModal.querySelector('.btn-close');
+      if (editCloseBtn) {
+        editCloseBtn.addEventListener('click', function() {
+          const editModal = bootstrap.Modal.getInstance(editCareerModal);
+          if (editModal) {
+            editModal.hide();
+          }
+          // Remove any existing backdrops
+          const existingBackdrops = document.querySelectorAll('.modal-backdrop');
+          existingBackdrops.forEach(backdrop => backdrop.remove());
+          document.body.classList.remove('modal-open');
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+        });
+      }
+      
+      // Handle cancel button in edit modal
+      const editCancelBtn = editCareerModal.querySelector('button[data-bs-dismiss="modal"]');
+      if (editCancelBtn) {
+        editCancelBtn.addEventListener('click', function() {
+          const editModal = bootstrap.Modal.getInstance(editCareerModal);
+          if (editModal) {
+            editModal.hide();
+          }
+          // Remove any existing backdrops
+          const existingBackdrops = document.querySelectorAll('.modal-backdrop');
+          existingBackdrops.forEach(backdrop => backdrop.remove());
+          document.body.classList.remove('modal-open');
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+        });
+      }
+    }
+    
     // Filter functionality for users table
     const userSearchInput = document.getElementById('userSearchInput');
+    const locationSearchInput = document.getElementById('locationSearchInput');
     const jobFilter = document.getElementById('jobFilter');
     const educationFilter = document.getElementById('educationFilter');
     const resetFilters = document.getElementById('resetFilters');
@@ -454,19 +1367,22 @@
       if (!rows.length) return;
       
       const searchText = userSearchInput.value.toLowerCase();
+      const locationText = locationSearchInput.value.toLowerCase();
       const jobValue = jobFilter.value.toLowerCase();
       const educationValue = educationFilter.value.toLowerCase();
       
       rows.forEach(row => {
         const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+        const location = row.querySelector('td:nth-child(6)').textContent.toLowerCase();
         const jobData = row.getAttribute('data-job').toLowerCase();
         const educationData = row.getAttribute('data-education').toLowerCase();
         
         const nameMatch = name.includes(searchText);
+        const locationMatch = !locationText || location.includes(locationText);
         const jobMatch = !jobValue || jobData.includes(jobValue);
         const educationMatch = !educationValue || educationData === educationValue;
         
-        if (nameMatch && jobMatch && educationMatch) {
+        if (nameMatch && locationMatch && jobMatch && educationMatch) {
           row.style.display = '';
         } else {
           row.style.display = 'none';
@@ -484,6 +1400,9 @@
       if (educationValue) {
         params.push(`education=${encodeURIComponent(educationValue)}`);
       }
+      if (locationText) {
+        params.push(`location=${encodeURIComponent(locationText)}`);
+      }
       
       if (params.length > 0) {
         downloadUrl += '?' + params.join('&');
@@ -494,12 +1413,14 @@
     }
     
     if (userSearchInput) userSearchInput.addEventListener('input', applyFilters);
+    if (locationSearchInput) locationSearchInput.addEventListener('input', applyFilters);
     if (jobFilter) jobFilter.addEventListener('change', applyFilters);
     if (educationFilter) educationFilter.addEventListener('change', applyFilters);
     
     if (resetFilters) {
     resetFilters.addEventListener('click', function() {
       userSearchInput.value = '';
+      locationSearchInput.value = '';
       jobFilter.value = '';
       educationFilter.value = '';
         if (rows.length) rows.forEach(row => row.style.display = '');
@@ -544,22 +1465,34 @@
     const createMatchTab = document.getElementById('create-match-tab');
     
     // Handle download buttons to ensure redirect back to dashboard
-    const downloadButtons = document.querySelectorAll('a[href*="download_xls"]');
+    const downloadButtons = document.querySelectorAll('a[href*="download_xls"], #downloadTemplateBtn');
     downloadButtons.forEach(button => {
       button.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Show loading indicator
+        const originalText = this.innerHTML;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Downloading...';
+        this.disabled = true;
+        
         // Create an iframe to handle the download without navigating away
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
         document.body.appendChild(iframe);
         
-        // Set up a timer to reload the page after download has likely started
+        // Set up a timer to restore button and ensure we stay on the page
         setTimeout(() => {
-          window.location.href = "{{ url_for('admin.dashboard') }}";
+          this.innerHTML = originalText;
+          this.disabled = false;
+          
+          // Clean up iframe
+          if (iframe && iframe.parentNode) {
+            iframe.parentNode.removeChild(iframe);
+          }
         }, 2000);
         
         // Start the download in the iframe
         iframe.src = this.href;
-        e.preventDefault();
       });
     });
     
@@ -640,16 +1573,365 @@
         document.getElementById('create-match').scrollIntoView();
       });
     }
+    
+    // Handle review deletion forms
+    const deleteReviewForms = document.querySelectorAll('.delete-review-form');
+    deleteReviewForms.forEach(form => {
+      form.addEventListener('submit', function(e) {
+        if (!confirm('Are you sure you want to delete this review?')) {
+          e.preventDefault();
+          return false;
+        }
+        
+        const reviewId = this.getAttribute('data-review-id');
+        const reviewRow = document.getElementById('review-row-' + reviewId);
+        
+        if (reviewRow) {
+          // Add loading state
+          const submitBtn = this.querySelector('button[type="submit"]');
+          submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
+          submitBtn.disabled = true;
+        }
+      });
+    });
+    
+    // Setup chat message form event listener - CRITICAL: Must be inside DOMContentLoaded
+    if (messageForm) {
+      messageForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        if (!currentChatUser) {
+          console.error('No chat user selected');
+          return;
+        }
+        
+        const messageInput = document.getElementById('messageInput');
+        const submitButton = messageForm.querySelector('button[type="submit"]');
+        const message = messageInput.value.trim();
+        if (!message) {
+          console.error('No message to send');
+          return;
+        }
+        
+        // Show loading state
+        const originalButtonText = submitButton.innerHTML;
+        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...';
+        submitButton.disabled = true;
+        
+        console.log('🚀 Sending message to user:', currentChatUser, 'Message:', message);
+        
+        try {
+          console.log('📤 Making fetch request to send_admin_message...');
+          const response = await fetch('{{ url_for("admin.send_admin_message") }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `user_id=${currentChatUser}&message=${encodeURIComponent(message)}`
+          });
+          
+          console.log('📥 Got response:', response.status, response.statusText);
+          const result = await response.json();
+          console.log('📊 Response data:', result);
+          
+          if (result.status === 'success') {
+            console.log('✅ Message sent successfully, clearing input and reloading chat');
+            messageInput.value = '';
+            const chatUserNameEl = document.getElementById('chatUserName');
+            const userName = chatUserNameEl ? chatUserNameEl.textContent : 'User';
+            console.log('🔄 Calling loadUserChat manually after successful send...');
+            loadUserChat(currentChatUser, userName);
+          } else {
+            console.error('❌ Failed to send message:', result.message);
+            alert('Failed to send message: ' + (result.message || 'Unknown error'));
+          }
+        } catch (error) {
+          console.error('💥 Error sending message:', error);
+          alert('Error sending message: ' + error.message);
+        } finally {
+          console.log('🔧 Restoring button state');
+          // Always restore button state
+          submitButton.innerHTML = originalButtonText;
+          submitButton.disabled = false;
+        }
+      });
+    } else {
+      console.warn('Message form not found - chat functionality will not work');
+    }
   });
 </script>
-{% endblock %}
 
-{% block footer %}
-<footer class="footer mt-5 py-3" style="background-color: #f8f9fa;">
-  <div class="container">
-    <div class="text-center">
-      <p class="mb-0" style="color: #555;">&copy; {{ now.year }} Designed & Developed by Aniket Dhakate. All rights reserved.</p>
-    </div>
-  </div>
-</footer>
+<!-- Career Management Scripts -->
+<script>
+function editCareer(careerId) {
+    // Get career data from the global career_opportunities object
+    const career = career_opportunities[careerId];
+    if (!career) {
+        alert('Career not found');
+        return;
+    }
+    
+    // Set action URL for the form
+    document.getElementById('editCareerForm').action = `/admin/careers/edit/${careerId}`;
+    
+    // Populate form fields
+    document.getElementById('edit_title').value = career.title || '';
+    document.getElementById('edit_location').value = career.location || '';
+    document.getElementById('edit_job_type').value = career.job_type || 'full-time';
+    document.getElementById('edit_salary').value = career.salary || '';
+    document.getElementById('edit_description').value = career.description || '';
+    document.getElementById('edit_requirements').value = career.requirements || '';
+    document.getElementById('edit_status').value = career.status || 'active';
+    
+    // Set deadline if available
+    if (career.deadline) {
+        // Format date as YYYY-MM-DD for the date input
+        const deadlineDate = new Date(career.deadline);
+        if (!isNaN(deadlineDate)) {
+            const formattedDate = deadlineDate.toISOString().split('T')[0];
+            document.getElementById('edit_deadline').value = formattedDate;
+        } else {
+            document.getElementById('edit_deadline').value = career.deadline;
+        }
+    } else {
+        document.getElementById('edit_deadline').value = '';
+    }
+    
+    // CUSTOM MODAL SHOW - Bypass Bootstrap entirely
+    showCustomModal('editCareerModal');
+}
+
+// Custom modal functions
+function showCustomModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    // Clean up any existing modal states
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+    
+    // Show modal with custom implementation
+    modal.style.display = 'flex';
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    
+    // Add click handlers for close buttons
+    setupModalCloseHandlers(modalId);
+}
+
+function hideCustomModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+    document.body.classList.remove('modal-open');
+}
+
+function setupModalCloseHandlers(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    // Close button (X)
+    const closeBtn = modal.querySelector('.btn-close');
+    if (closeBtn) {
+        closeBtn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            hideCustomModal(modalId);
+            return false;
+        };
+    }
+    
+    // Cancel button
+    const cancelBtn = modal.querySelector('button[data-bs-dismiss="modal"]');
+    if (cancelBtn) {
+        cancelBtn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            hideCustomModal(modalId);
+            return false;
+        };
+    }
+    
+    // Click outside to close
+    modal.onclick = function(e) {
+        if (e.target === modal) {
+            hideCustomModal(modalId);
+        }
+    };
+    
+    // Prevent clicks inside modal content from closing modal
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.onclick = function(e) {
+            e.stopPropagation();
+        };
+    }
+}
+
+// Make career opportunities available globally for the edit function
+const career_opportunities = {{ career_opportunities|tojson }};
+</script>
+
+<!-- Socket.IO Script -->
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Connect to Socket.IO server
+    const socket = io();
+    
+    // Unread messages tracking
+    const unreadMessages = {};
+    
+    // Initialize unread messages for all users
+    document.querySelectorAll('.user-list-item').forEach(userItem => {
+      const userId = userItem.getAttribute('data-user-id');
+      if (userId) {
+        unreadMessages[userId] = 0;
+      }
+    });
+    
+    // Function to update notification indicators
+    function updateNotificationIndicators(userId) {
+      if (!userId || !unreadMessages[userId]) return;
+      
+      const userItem = document.querySelector(`.user-list-item[data-user-id="${userId}"]`);
+      const notificationDot = document.getElementById(`notification-dot-${userId}`);
+      const notificationCount = document.getElementById(`notification-count-${userId}`);
+      const newMessageIcon = document.getElementById(`new-message-icon-${userId}`);
+      
+      if (!userItem || !notificationDot || !notificationCount || !newMessageIcon) return;
+      
+      // Show notification indicators if there are unread messages
+      if (unreadMessages[userId] > 0) {
+        userItem.classList.add('has-unread');
+        notificationDot.classList.remove('hidden');
+        newMessageIcon.classList.remove('hidden');
+        
+        // Only show count if more than 1 message
+        if (unreadMessages[userId] > 1) {
+          notificationCount.textContent = unreadMessages[userId];
+          notificationCount.classList.remove('hidden');
+        } else {
+          notificationCount.classList.add('hidden');
+        }
+      } else {
+        // Hide all indicators if no unread messages
+        userItem.classList.remove('has-unread');
+        notificationDot.classList.add('hidden');
+        notificationCount.classList.add('hidden');
+        newMessageIcon.classList.add('hidden');
+      }
+    }
+    
+    // Function to mark messages as read for a user
+    function markMessagesAsRead(userId) {
+      if (!userId || !unreadMessages[userId]) return;
+      
+      unreadMessages[userId] = 0;
+      updateNotificationIndicators(userId);
+      
+      // Notify server that messages were read (if you implement this feature)
+      socket.emit('admin_read_messages', { user_id: userId });
+    }
+    
+    // Make notification functions globally accessible
+    window.markMessagesAsRead = markMessagesAsRead;
+    window.updateNotificationIndicators = updateNotificationIndicators;
+    
+    // Handle connection event
+    socket.on('connect', function() {
+      console.log('Admin: Connected to Socket.IO server');
+    });
+    
+    // Handle review_deleted event
+    socket.on('review_deleted', function(data) {
+      console.log('Admin: Review deleted:', data);
+      const reviewId = data.review_id;
+      const reviewRow = document.getElementById('review-row-' + reviewId);
+      
+      if (reviewRow) {
+        // Add fade-out animation
+        reviewRow.style.transition = 'opacity 0.5s ease';
+        reviewRow.style.opacity = '0';
+        
+        // Remove the element after animation completes
+        setTimeout(function() {
+          reviewRow.remove();
+        }, 500);
+      }
+    });
+    
+    // Handle disconnection
+    socket.on('disconnect', function() {
+      console.log('Admin: Disconnected from Socket.IO server');
+    });
+    
+    // Handle new message event
+    socket.on('new_user_message', function(data) {
+      console.log('Admin: New message from user:', data);
+      const userId = data.sender_id;
+      
+      // Don't notify if we're currently viewing this user's chat
+      if (currentChatUser === userId) {
+        // If already chatting with this user, just reload the chat to show new message
+        const chatUserNameEl = document.getElementById('chatUserName');
+        const userName = chatUserNameEl ? chatUserNameEl.textContent : 'User';
+        loadUserChat(userId, userName);
+        return;
+      }
+      
+      // Increment unread count for this user
+      if (unreadMessages[userId] !== undefined) {
+        unreadMessages[userId]++;
+        updateNotificationIndicators(userId);
+        
+        // Optional: Play notification sound
+        playNotificationSound();
+      }
+    });
+    
+    // Handle admin message sent event (when admin sends a message)
+    socket.on('admin_message_sent', function(data) {
+      console.log('🔔 Admin: Received admin_message_sent event:', data);
+      const userId = data.receiver_id;
+      
+      console.log('📨 Current chat user:', currentChatUser, 'Event receiver:', userId);
+      
+      // If we're currently viewing this user's chat, reload it to show our message
+      if (currentChatUser === userId) {
+        console.log('✅ Reloading chat for user:', userId);
+        const chatUserNameEl = document.getElementById('chatUserName');
+        const userName = chatUserNameEl ? chatUserNameEl.textContent : 'User';
+        loadUserChat(userId, userName);
+      } else {
+        console.log('❌ Not reloading chat - different user selected');
+      }
+    });
+    
+    // Debug: Log all Socket.IO events
+    socket.onAny((eventName, ...args) => {
+      console.log('🔍 Socket.IO Event:', eventName, args);
+    });
+    
+    // Function to play notification sound
+    function playNotificationSound() {
+      try {
+        // Create audio element for notification sound
+        const audio = new Audio('/static/sounds/notification.mp3');
+        audio.volume = 0.5;
+        audio.play();
+      } catch (e) {
+        console.warn('Could not play notification sound:', e);
+      }
+    }
+  });
+</script>
+
+
+
 {% endblock %}
